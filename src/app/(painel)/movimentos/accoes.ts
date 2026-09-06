@@ -12,7 +12,7 @@ const DATA_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 async function exigirAdmin() {
   const perfil = await perfilAtual();
-  if (perfil?.papel !== "admin") {
+  if (!perfil?.admin) {
     throw new Error("Só a administração pode lançar movimentos.");
   }
   return perfil;

@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { CabecalhoPagina, Painel } from "@/components/ui";
 import { construirMapa } from "@/lib/contas";
 import {
   carregarCategorias,
-  carregarMovimentos,
+  carregarResumoExercicio,
   carregarSaldosIniciais,
   definicao,
   limitesDoAno,
-  paraCalculo,
   perfilAtual,
 } from "@/lib/dados";
 import { euros } from "@/lib/formatos";
@@ -21,7 +19,7 @@ export default async function PaginaRelatorios({
   searchParams: Promise<{ inicio?: string; fim?: string }>;
 }) {
   const perfil = await perfilAtual();
-  if (perfil?.papel !== "admin") redirect("/");
+  const admin = perfil?.admin === true;
 
   const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
   const [inicioAno, fimAno] = limitesDoAno(ano);
@@ -34,8 +32,10 @@ export default async function PaginaRelatorios({
     ? params.fim!
     : fimAno;
 
+  // O resumo passa por uma função agregada que o condómino também pode chamar:
+  // devolve totais por linha do mapa, sem movimentos nem frações individuais.
   const [movimentos, abertura, categorias] = await Promise.all([
-    carregarMovimentos(inicio, fim),
+    carregarResumoExercicio(inicio, fim),
     carregarSaldosIniciais(ano),
     carregarCategorias(),
   ]);
@@ -49,7 +49,7 @@ export default async function PaginaRelatorios({
       .map((c) => c.linha_moaf ?? c.nome),
   };
 
-  const mapa = construirMapa(paraCalculo(movimentos), abertura, rotulosFixos);
+  const mapa = construirMapa(movimentos, abertura, rotulosFixos);
   const descarregar = `/api/relatorios/moaf?ano=${ano}&inicio=${inicio}&fim=${fim}`;
 
   return (
@@ -62,7 +62,11 @@ export default async function PaginaRelatorios({
 
       <Painel
         titulo="Período"
-        descricao="Escolhe o intervalo e pré-visualiza os totais antes de descarregar."
+        descricao={
+          admin
+            ? "Escolhe o intervalo e pré-visualiza os totais antes de descarregar."
+            : "Escolhe o intervalo. Os totais são os do condomínio inteiro, em modo de consulta."
+        }
       >
         <form method="get" className="flex flex-wrap items-end gap-4">
           <div className="flex flex-col gap-2">
@@ -146,12 +150,14 @@ export default async function PaginaRelatorios({
           </p>
         </div>
 
-        <a
-          href={descarregar}
-          className="inline-flex items-center justify-center rounded-lg bg-verdete-700 px-5 py-3 text-sm font-medium text-pergaminho-50 shadow-[var(--shadow-medio)] transition-[transform,background-color,box-shadow] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:bg-verdete-600 hover:shadow-[var(--shadow-alto)] active:translate-y-0 active:bg-verdete-800"
-        >
-          Descarregar em Excel
-        </a>
+        {admin && (
+          <a
+            href={descarregar}
+            className="inline-flex items-center justify-center rounded-lg bg-verdete-700 px-5 py-3 text-sm font-medium text-pergaminho-50 shadow-[var(--shadow-medio)] transition-[transform,background-color,box-shadow] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:bg-verdete-600 hover:shadow-[var(--shadow-alto)] active:translate-y-0 active:bg-verdete-800"
+          >
+            Descarregar em Excel
+          </a>
+        )}
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ export default async function PaginaQuotas() {
     carregarCategorias(),
   ]);
 
-  const admin = perfil?.papel === "admin";
+  const admin = perfil?.admin === true;
   const categoriaQuotas = categorias.find((c) => c.nome === "Quotizações");
 
   const hoje = new Date().toISOString().slice(0, 10);

@@ -23,7 +23,7 @@ export default async function PaginaMovimentos({
   searchParams: Promise<{ mes?: string; categoria?: string; fracao?: string }>;
 }) {
   const perfil = await perfilAtual();
-  const admin = perfil?.papel === "admin";
+  const admin = perfil?.admin === true;
 
   const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
   const [inicioAno, fimAno] = limitesDoAno(ano);

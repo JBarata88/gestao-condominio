@@ -28,8 +28,10 @@ const PAGINAS: Array<{ caminho: string; etiqueta: string }> = [
   { caminho: "/quotas", etiqueta: "quotas" },
   { caminho: "/relatorios", etiqueta: "relatorios" },
   { caminho: "/recibos", etiqueta: "recibos" },
-  { caminho: "/extratos", etiqueta: "extratos" },
   { caminho: "/definicoes", etiqueta: "definicoes" },
+  { caminho: "/definicoes/fracoes", etiqueta: "definicoes-fracoes" },
+  { caminho: "/definicoes/contas", etiqueta: "definicoes-contas" },
+  { caminho: "/definicoes/extratos", etiqueta: "definicoes-extratos" },
 ];
 
 function carregarAmbiente() {

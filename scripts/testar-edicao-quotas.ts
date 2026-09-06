@@ -292,7 +292,7 @@ async function main() {
         "2026-06-15;PAGAMENTO SEM NOME RECONHECIVEL;40,00\n";
       writeFileSync(ficheiroTemp, csv, "utf8");
 
-      await pagina.goto(`${BASE}/extratos`, { waitUntil: "networkidle2" });
+      await pagina.goto(`${BASE}/definicoes/extratos`, { waitUntil: "networkidle2" });
       const input = await pagina.$('input[type="file"]');
       if (!input) throw new Error("não encontrei o campo de ficheiro");
       await input.uploadFile(ficheiroTemp);

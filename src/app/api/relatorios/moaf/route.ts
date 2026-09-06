@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 /** Mapa de origem e aplicação de fundos, em Excel. */
 export async function GET(pedido: NextRequest) {
   const perfil = await perfilAtual();
-  if (perfil?.papel !== "admin") {
+  if (!perfil?.admin) {
     return NextResponse.json({ erro: "Sem permissão." }, { status: 403 });
   }
 

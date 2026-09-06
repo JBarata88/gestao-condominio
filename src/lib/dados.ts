@@ -23,12 +23,18 @@ export function configurado(): boolean {
 }
 
 /**
- * Perfil do utilizador com sessão iniciada.
+ * Perfil do utilizador com sessão iniciada, com o campo `admin` já calculado.
+ *
+ * Um utilizador é administrador quando `papel` é 'admin' ou quando está ligado
+ * a uma fração marcada como "da administração" em Definições. As páginas devem
+ * usar `perfil.admin` em vez de comparar `papel` directamente.
  *
  * Envolvido em cache() para que várias chamadas dentro do mesmo pedido
  * partilhem um único acesso à base de dados.
  */
-export const perfilAtual = cache(async (): Promise<Perfil | null> => {
+export type PerfilAtual = Perfil & { admin: boolean };
+
+export const perfilAtual = cache(async (): Promise<PerfilAtual | null> => {
   if (!configurado()) return null;
 
   const supabase = await clienteServidor();
@@ -37,13 +43,31 @@ export const perfilAtual = cache(async (): Promise<Perfil | null> => {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data: perfil } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
 
-  return data ?? null;
+  if (!perfil) return null;
+
+  // O papel 'admin' basta. Caso contrário, a fração ligada ao perfil pode
+  // estar marcada como "da administração" nas Definições, o que também dá
+  // acesso de administrador.
+  let fracaoDaAdministracao = false;
+  if (perfil.papel !== "admin" && perfil.fracao_id) {
+    const { data: fracao } = await supabase
+      .from("fracoes")
+      .select("administracao")
+      .eq("id", perfil.fracao_id)
+      .maybeSingle();
+    fracaoDaAdministracao = fracao?.administracao === true;
+  }
+
+  return {
+    ...perfil,
+    admin: perfil.papel === "admin" || fracaoDaAdministracao,
+  };
 });
 
 export const carregarCondominio = cache(async (): Promise<Condominio | null> => {
@@ -129,6 +153,36 @@ export const carregarMovimentos = cache(
       .order("data", { ascending: true });
 
     return (data ?? []) as unknown as MovimentoDetalhado[];
+  },
+);
+
+/**
+ * Totais do exercício para o mapa de origem e aplicação de fundos, agregados
+ * por conta, natureza e linha do mapa.
+ *
+ * Ao contrário de carregarMovimentos, passa pela função resumo_exercicio, que
+ * um condómino também pode chamar: devolve apenas somas, sem datas, descrições
+ * nem a fração de cada movimento. Serve a página de Relatórios, onde só se
+ * mostram totais.
+ */
+export const carregarResumoExercicio = cache(
+  async (inicio: string, fim: string): Promise<MovimentoCalculo[]> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase.rpc("resumo_exercicio", {
+      p_inicio: inicio,
+      p_fim: fim,
+    });
+
+    return (data ?? []).map((r) => ({
+      // A data não é usada pelo mapa; fica o início do período por preencher.
+      data: inicio,
+      conta: r.conta,
+      receita: Number(r.receita),
+      despesa: Number(r.despesa),
+      categoria: r.linha_moaf,
+      natureza: r.natureza,
+      linhaMoaf: r.linha_moaf,
+    }));
   },
 );
 

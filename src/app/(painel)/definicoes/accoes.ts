@@ -14,7 +14,7 @@ export type Resultado = { ok: boolean; mensagem: string };
  */
 async function exigirAdmin() {
   const perfil = await perfilAtual();
-  if (perfil?.papel !== "admin") {
+  if (!perfil?.admin) {
     throw new Error("Sem permissão para alterar definições.");
   }
 }
@@ -64,7 +64,7 @@ export async function guardarCondominio(
     const { error } = await supabase.from("condominio").upsert(registo);
     if (error) return { ok: false, mensagem: error.message };
 
-    revalidatePath("/definicoes");
+    revalidatePath("/definicoes", "layout");
     return { ok: true, mensagem: "Dados do condomínio guardados." };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
@@ -102,6 +102,9 @@ export async function guardarFracao(
       permilagem: numero(dados, "permilagem"),
       quota_mensal: numero(dados, "quota_mensal") ?? 0,
       ativo: dados.get("ativo") !== null,
+      // Marca a fração como sendo da administração: o condómino ligado a ela
+      // passa a ter acesso de administrador (ver e_admin() no RLS).
+      administracao: dados.get("administracao") !== null,
       ordem: Number(texto(dados, "ordem") ?? "0"),
       atualizado_em: new Date().toISOString(),
     };
@@ -112,7 +115,7 @@ export async function guardarFracao(
 
     if (error) return { ok: false, mensagem: error.message };
 
-    revalidatePath("/definicoes");
+    revalidatePath("/definicoes", "layout");
     revalidatePath("/quotas");
     return { ok: true, mensagem: `Fração ${letra} guardada.` };
   } catch (e) {
@@ -152,7 +155,7 @@ export async function guardarFornecedor(
 
     if (error) return { ok: false, mensagem: error.message };
 
-    revalidatePath("/definicoes");
+    revalidatePath("/definicoes", "layout");
     return { ok: true, mensagem: `Fornecedor ${nome} guardado.` };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
@@ -172,7 +175,7 @@ export async function apagarFornecedor(
     const { error } = await supabase.from("fornecedores").delete().eq("id", id);
     if (error) return { ok: false, mensagem: error.message };
 
-    revalidatePath("/definicoes");
+    revalidatePath("/definicoes", "layout");
     return { ok: true, mensagem: "Fornecedor removido." };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };

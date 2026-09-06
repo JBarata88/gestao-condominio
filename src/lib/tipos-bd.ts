@@ -37,6 +37,8 @@ export type Fracao = {
   permilagem: number | null;
   quota_mensal: number;
   ativo: boolean;
+  /** Quando verdadeiro, o condómino ligado a esta fração tem acesso de administrador. */
+  administracao: boolean;
   atualizado_em: string;
 };
 
@@ -192,6 +194,7 @@ type ComOmissao =
   | "prioridade"
   | "valor_presenca"
   | "tratamento"
+  | "administracao"
   | "papel"
   | "caixa"
   | "deposito_ordem"
@@ -254,6 +257,16 @@ export type BaseDados = {
     Functions: {
       e_admin: { Args: Record<never, never>; Returns: boolean };
       fracao_atual: { Args: Record<never, never>; Returns: string };
+      resumo_exercicio: {
+        Args: { p_inicio: string; p_fim: string };
+        Returns: {
+          conta: TipoConta;
+          natureza: NaturezaCategoria;
+          linha_moaf: string;
+          receita: number;
+          despesa: number;
+        }[];
+      };
     };
     Enums: {
       papel_utilizador: PapelUtilizador;

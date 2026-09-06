@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Painel" };
 
 export default async function PaginaPainel() {
   const perfil = await perfilAtual();
-  const admin = perfil?.papel === "admin";
+  const admin = perfil?.admin === true;
 
   const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
   const diaLimite = await definicao<number>("dia_limite_quota", 8);

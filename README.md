@@ -19,7 +19,10 @@ Substitui as folhas de Excel e os documentos Word que eram preenchidos à mão.
   do ficheiro `MOAF` que já usavas.
 - **Recibos** em Word, nos três modelos existentes: quota, presença em
   assembleia e documento de caixa.
-- **Definições**: dados do condomínio, prazos, condóminos e fornecedores.
+- **Definições** em cinco áreas: Condomínio (dados, prazos e saldos de
+  abertura), Frações (condóminos e quem é da administração), Contas (criar e
+  atribuir os acessos de login), Fornecedores e importação de Extratos
+  bancários.
 
 ## Uma correção face às folhas antigas
 
@@ -97,9 +100,11 @@ npm run dev
 4. Em **Authentication > Sign In / Providers**, desliga o registo público. As
    contas são criadas pela administração.
 
-5. Cria a tua conta em **Authentication > Users > Add user**. O primeiro
-   utilizador do sistema fica automaticamente como administrador; a partir daí
-   os novos ficam como condóminos.
+5. Cria a **tua** conta em **Authentication > Users > Add user**. O primeiro
+   utilizador do sistema fica automaticamente como administrador. As contas
+   seguintes já podem ser criadas dentro da aplicação, em
+   **Definições > Contas**, que também é onde se atribui a fração de cada
+   condómino (usa a `SUPABASE_SERVICE_ROLE_KEY` do `.env.local`).
 
 6. Confirma que está tudo bem:
 
@@ -179,8 +184,15 @@ O repositório é público, por isso:
   `.gitignore`, porque contêm nomes, contribuinte e NIB reais.
 
 Um condómino autenticado vê apenas a sua fração, os movimentos dela e os seus
-recibos. As páginas de Definições e de Extratos, e os dados dos fornecedores
-com IBAN, são exclusivos da administração.
+recibos, e o menu limita-se a Painel, Movimentos, Quotas e Relatórios. As
+Definições (incluindo a importação de extratos) e os dados dos fornecedores com
+IBAN são exclusivos da administração. O mapa de origem e aplicação de fundos em
+Relatórios é visível a qualquer condómino em modo de consulta, através de uma
+função agregada que não expõe movimentos individuais.
+
+Ser administrador vem de `profiles.papel = 'admin'` (o primeiro utilizador) ou
+de a fração do condómino estar marcada como "da administração" em
+**Definições > Frações**. A função `e_admin()` do RLS junta as duas condições.
 
 ## Estrutura
 

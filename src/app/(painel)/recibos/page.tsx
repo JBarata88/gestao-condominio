@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Recibos" };
 
 export default async function PaginaRecibos() {
   const perfil = await perfilAtual();
-  if (perfil?.papel !== "admin") redirect("/");
+  if (!perfil?.admin) redirect("/");
 
   const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
   const [inicio, fim] = limitesDoAno(ano);

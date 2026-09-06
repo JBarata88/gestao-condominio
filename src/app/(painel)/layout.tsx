@@ -16,7 +16,6 @@ const ITENS_ADMIN: ItemNavegacao[] = [
   { href: "/", rotulo: "Painel" },
   { href: "/movimentos", rotulo: "Movimentos" },
   { href: "/quotas", rotulo: "Quotas" },
-  { href: "/extratos", rotulo: "Extratos" },
   { href: "/relatorios", rotulo: "Relatórios" },
   { href: "/recibos", rotulo: "Recibos" },
   { href: "/definicoes", rotulo: "Definições" },
@@ -24,9 +23,9 @@ const ITENS_ADMIN: ItemNavegacao[] = [
 
 const ITENS_CONDOMINO: ItemNavegacao[] = [
   { href: "/", rotulo: "Painel" },
-  { href: "/movimentos", rotulo: "Conta corrente" },
+  { href: "/movimentos", rotulo: "Movimentos" },
   { href: "/quotas", rotulo: "Quotas" },
-  { href: "/recibos", rotulo: "Recibos" },
+  { href: "/relatorios", rotulo: "Relatórios" },
 ];
 
 export default async function LayoutPainel({
@@ -39,7 +38,7 @@ export default async function LayoutPainel({
   const perfil = await perfilAtual();
   if (!perfil) redirect("/entrar");
 
-  const admin = perfil.papel === "admin";
+  const admin = perfil.admin;
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
