@@ -14,6 +14,7 @@ import type {
 } from "./tipos-bd";
 import type { MovimentoCalculo, SaldosAbertura } from "./contas";
 import { ABERTURA_VAZIA } from "./contas";
+import { somar } from "./formatos";
 
 /** True quando as variáveis de ambiente do Supabase estão preenchidas. */
 export function configurado(): boolean {
@@ -181,6 +182,49 @@ export const anosComExercicio = cache(async (): Promise<number[]> => {
   for (let a = min; a <= max; a++) if (anoValido(a)) anos.add(a);
 
   return [...anos].filter(anoValido).sort((a, b) => b - a);
+});
+
+export type ExercicioResumo = {
+  ano: number;
+  /** Soma dos quatro saldos de abertura. */
+  aberturaTotal: number;
+  /** Número de movimentos lançados nesse ano. */
+  movimentos: number;
+};
+
+/**
+ * Exercícios com saldos de abertura definidos, do mais recente para o mais
+ * antigo, com o total de abertura e a contagem de movimentos de cada um. É a
+ * lista que a tabela de exercícios em Definições mostra.
+ */
+export const listarExercicios = cache(async (): Promise<ExercicioResumo[]> => {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("saldos_iniciais")
+    .select("*")
+    .order("ano", { ascending: false });
+  const linhas = (data ?? []) as SaldosIniciais[];
+
+  return Promise.all(
+    linhas.map(async (s) => {
+      const { count } = await supabase
+        .from("movimentos")
+        .select("id", { count: "exact", head: true })
+        .gte("data", `${s.ano}-01-01`)
+        .lte("data", `${s.ano}-12-31`);
+
+      return {
+        ano: s.ano,
+        aberturaTotal: somar([
+          Number(s.caixa),
+          Number(s.deposito_ordem),
+          Number(s.deposito_prazo),
+          Number(s.conta_poupanca),
+        ]),
+        movimentos: count ?? 0,
+      };
+    }),
+  );
 });
 
 /** True quando já existe uma linha de saldos de abertura para o ano. */

@@ -6,24 +6,28 @@ import {
   carregarCondominio,
   carregarSaldosIniciais,
   definicao,
+  listarExercicios,
   temSaldosIniciais,
 } from "@/lib/dados";
+import { euros } from "@/lib/formatos";
 import {
   abrirExercicio,
   guardarCondominio,
   guardarDefinicoes,
   guardarSaldosIniciais,
 } from "../accoes";
+import BotaoApagarExercicio from "./botao-apagar-exercicio";
 
 export const metadata: Metadata = { title: "Condomínio · Definições" };
 
 export default async function PaginaDefinicoesCondominio() {
   const ano = await anoDeExercicio();
 
-  const [condominio, saldos, saldosDefinidos] = await Promise.all([
+  const [condominio, saldos, saldosDefinidos, exercicios] = await Promise.all([
     carregarCondominio(),
     carregarSaldosIniciais(ano),
     temSaldosIniciais(ano),
+    listarExercicios(),
   ]);
 
   // O campo "Ano do exercício" mexe no valor por omissão guardado, não no ano
@@ -119,6 +123,86 @@ export default async function PaginaDefinicoesCondominio() {
             />
           </div>
         </FormularioAccao>
+
+        <div className="mt-8 border-t border-pergaminho-200 pt-6">
+          <h3 className="font-display text-base font-semibold text-verdete-900">
+            Exercícios activos
+          </h3>
+          <p className="mt-1 text-sm text-pergaminho-600">
+            Cada exercício com saldos de abertura definidos. Um exercício só pode
+            ser eliminado se não tiver movimentos e não for o exercício por
+            omissão. Eliminar apaga os saldos de abertura e as quotas desse ano;
+            os movimentos nunca são apagados aqui.
+          </p>
+
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[30rem] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-pergaminho-200 text-left">
+                  <th className="px-3 py-2 font-medium text-verdete-800">Ano</th>
+                  <th className="px-3 py-2 font-medium text-pergaminho-600">
+                    Abertura
+                  </th>
+                  <th className="px-3 py-2 font-medium text-pergaminho-600">
+                    Movimentos
+                  </th>
+                  <th className="px-3 py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {exercicios.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-3 py-4 text-pergaminho-500"
+                    >
+                      Ainda não há exercícios com saldos de abertura.
+                    </td>
+                  </tr>
+                ) : (
+                  exercicios.map((e) => {
+                    const ehPorOmissao = e.ano === anoPorOmissao;
+                    const bloqueado = ehPorOmissao || e.movimentos > 0;
+                    const motivo = ehPorOmissao
+                      ? "Exercício por omissão"
+                      : `${e.movimentos} movimento(s)`;
+                    return (
+                      <tr
+                        key={e.ano}
+                        className="border-b border-pergaminho-100 last:border-0"
+                      >
+                        <th
+                          scope="row"
+                          className="px-3 py-2.5 text-left font-medium whitespace-nowrap text-verdete-900"
+                        >
+                          {e.ano}
+                          {ehPorOmissao && (
+                            <span className="ml-2 text-xs font-normal text-ocre-600">
+                              por omissão
+                            </span>
+                          )}
+                        </th>
+                        <td className="tabular px-3 py-2.5 text-pergaminho-600">
+                          {euros(e.aberturaTotal)}
+                        </td>
+                        <td className="tabular px-3 py-2.5 text-pergaminho-600">
+                          {e.movimentos}
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <BotaoApagarExercicio
+                            ano={e.ano}
+                            bloqueado={bloqueado}
+                            motivo={bloqueado ? motivo : undefined}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </Painel>
 
       {!saldosDefinidos && (

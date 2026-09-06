@@ -7,6 +7,7 @@ import {
   carregarMovimentos,
   carregarQuotasDoAno,
   carregarSaldosIniciais,
+  definicao,
   limitesDoAno,
   paraCalculo,
   perfilAtual,
@@ -428,6 +429,65 @@ export async function abrirExercicio(
       ok: true,
       mensagem: `Exercício de ${ano} aberto. Abertura transportada: caixa ${euros(fecho.caixa)}, banco ${euros(fecho.depositoOrdem)}.`,
     };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+/**
+ * Elimina um exercício: apaga os saldos de abertura e as quotas desse ano.
+ *
+ * Recusa se o ano tiver movimentos lançados (têm de ser apagados primeiro, em
+ * Movimentos ou na importação de Extratos) ou se for o exercício por omissão
+ * (muda-se primeiro o "Ano do exercício por omissão"). Os movimentos nunca são
+ * apagados aqui.
+ */
+export async function eliminarExercicio(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const supabase = await clienteServidor();
+
+    const ano = numero(dados, "ano");
+    if (ano === null || !Number.isInteger(ano)) {
+      return { ok: false, mensagem: "Ano inválido." };
+    }
+
+    const anoPorOmissao = await definicao<number>(
+      "ano_exercicio",
+      new Date().getFullYear(),
+    );
+    if (ano === anoPorOmissao) {
+      return {
+        ok: false,
+        mensagem: `${ano} é o exercício por omissão. Muda o "Ano do exercício por omissão" para outro ano antes de o eliminar.`,
+      };
+    }
+
+    const { count } = await supabase
+      .from("movimentos")
+      .select("id", { count: "exact", head: true })
+      .gte("data", `${ano}-01-01`)
+      .lte("data", `${ano}-12-31`);
+    if ((count ?? 0) > 0) {
+      return {
+        ok: false,
+        mensagem: `${ano} tem ${count} movimento(s) lançado(s). Apaga-os primeiro em Movimentos ou na importação de Extratos.`,
+      };
+    }
+
+    const { error: erroSaldos } = await supabase
+      .from("saldos_iniciais")
+      .delete()
+      .eq("ano", ano);
+    if (erroSaldos) return { ok: false, mensagem: erroSaldos.message };
+
+    await supabase.from("quotas_fracao").delete().eq("ano", ano);
+
+    revalidatePath("/", "layout");
+    return { ok: true, mensagem: `Exercício de ${ano} eliminado.` };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
   }
