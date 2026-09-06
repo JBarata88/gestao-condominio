@@ -123,12 +123,30 @@ export default async function PaginaRelatorios({
         </Painel>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <Painel titulo="Receitas por categoria">
+          <dl className="flex flex-col gap-2 text-sm">
+            {mapa.origem.atual.linhas.map((l) => (
+              <Linha key={l.rotulo} rotulo={l.rotulo} valor={l.valor} />
+            ))}
+            <Linha
+              rotulo="Total de receitas"
+              valor={mapa.origem.atual.subtotal}
+              forte
+            />
+          </dl>
+        </Painel>
+
         <Painel titulo="Despesas por categoria">
           <dl className="flex flex-col gap-2 text-sm">
             {mapa.aplicacao.despesas.linhas.map((l) => (
               <Linha key={l.rotulo} rotulo={l.rotulo} valor={l.valor} />
             ))}
+            <Linha
+              rotulo="Total de despesas"
+              valor={mapa.aplicacao.despesas.subtotal}
+              forte
+            />
           </dl>
         </Painel>
       </div>
