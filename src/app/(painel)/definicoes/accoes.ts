@@ -438,7 +438,7 @@ export async function abrirExercicio(
  * Elimina um exercício: apaga os saldos de abertura e as quotas desse ano.
  *
  * Recusa se o ano tiver movimentos lançados (têm de ser apagados primeiro, em
- * Movimentos ou na importação de Extratos) ou se for o exercício por omissão
+ * Movimentos ou na importação de Extratos) ou se for o exercício activo
  * (muda-se primeiro o "Ano do exercício por omissão"). Os movimentos nunca são
  * apagados aqui.
  */
@@ -462,7 +462,7 @@ export async function eliminarExercicio(
     if (ano === anoPorOmissao) {
       return {
         ok: false,
-        mensagem: `${ano} é o exercício por omissão. Muda o "Ano do exercício por omissão" para outro ano antes de o eliminar.`,
+        mensagem: `${ano} é o exercício activo. Muda o "Ano do exercício por omissão" para outro ano antes de o eliminar.`,
       };
     }
 

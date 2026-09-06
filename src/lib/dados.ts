@@ -186,41 +186,79 @@ export const anosComExercicio = cache(async (): Promise<number[]> => {
 
 export type ExercicioResumo = {
   ano: number;
-  /** Soma dos quatro saldos de abertura. */
+  /** O exercício activo, o que está em "Ano do exercício por omissão". */
+  ativo: boolean;
+  /** Já tem saldos de abertura definidos. */
+  temSaldos: boolean;
+  /** Soma dos quatro saldos de abertura (0 quando ainda não há). */
   aberturaTotal: number;
   /** Número de movimentos lançados nesse ano. */
   movimentos: number;
 };
 
 /**
- * Exercícios com saldos de abertura definidos, do mais recente para o mais
- * antigo, com o total de abertura e a contagem de movimentos de cada um. É a
- * lista que a tabela de exercícios em Definições mostra.
+ * Todos os exercícios que existem, do mais recente para o mais antigo: os que
+ * têm saldos de abertura, os que têm movimentos, os que têm quotas por ano e o
+ * exercício activo, mesmo que ainda esteja vazio. É a lista que a tabela de
+ * exercícios em Definições mostra.
  */
 export const listarExercicios = cache(async (): Promise<ExercicioResumo[]> => {
   const supabase = await clienteServidor();
-  const { data } = await supabase
-    .from("saldos_iniciais")
-    .select("*")
-    .order("ano", { ascending: false });
-  const linhas = (data ?? []) as SaldosIniciais[];
+
+  const [saldos, quotas, maisAntigo, maisRecente, anoAtivo] = await Promise.all([
+    supabase.from("saldos_iniciais").select("*"),
+    supabase.from("quotas_fracao").select("ano"),
+    supabase
+      .from("movimentos")
+      .select("data")
+      .order("data", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("movimentos")
+      .select("data")
+      .order("data", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    definicao<number>("ano_exercicio", new Date().getFullYear()),
+  ]);
+
+  const linhasSaldos = (saldos.data ?? []) as SaldosIniciais[];
+  const saldosPorAno = new Map(linhasSaldos.map((s) => [Number(s.ano), s]));
+
+  const anos = new Set<number>();
+  if (anoValido(anoAtivo)) anos.add(Number(anoAtivo));
+  for (const s of linhasSaldos) if (anoValido(s.ano)) anos.add(Number(s.ano));
+  for (const q of quotas.data ?? []) if (anoValido(q.ano)) anos.add(Number(q.ano));
+  if (maisAntigo.data && maisRecente.data) {
+    const min = Number(maisAntigo.data.data.slice(0, 4));
+    const max = Number(maisRecente.data.data.slice(0, 4));
+    for (let a = min; a <= max; a++) if (anoValido(a)) anos.add(a);
+  }
+
+  const ordenados = [...anos].sort((a, b) => b - a);
 
   return Promise.all(
-    linhas.map(async (s) => {
+    ordenados.map(async (ano) => {
       const { count } = await supabase
         .from("movimentos")
         .select("id", { count: "exact", head: true })
-        .gte("data", `${s.ano}-01-01`)
-        .lte("data", `${s.ano}-12-31`);
+        .gte("data", `${ano}-01-01`)
+        .lte("data", `${ano}-12-31`);
 
+      const s = saldosPorAno.get(ano);
       return {
-        ano: s.ano,
-        aberturaTotal: somar([
-          Number(s.caixa),
-          Number(s.deposito_ordem),
-          Number(s.deposito_prazo),
-          Number(s.conta_poupanca),
-        ]),
+        ano,
+        ativo: anoValido(anoAtivo) && ano === Number(anoAtivo),
+        temSaldos: s !== undefined,
+        aberturaTotal: s
+          ? somar([
+              Number(s.caixa),
+              Number(s.deposito_ordem),
+              Number(s.deposito_prazo),
+              Number(s.conta_poupanca),
+            ])
+          : 0,
         movimentos: count ?? 0,
       };
     }),

@@ -8,19 +8,28 @@ numeração segue o [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [0.7.1] — 2026-09-06
+
+### Alterado
+- A tabela de exercícios em Definições passa a mostrar **todos** os anos que
+  existem (com saldos de abertura, com movimentos ou com quotas por ano) mais o
+  exercício activo, mesmo que ainda esteja vazio — antes só aparecia quem já
+  tinha saldos de abertura. O ano em "Ano do exercício por omissão" está
+  assinalado como **activo**; os anos sem saldos aparecem como "sem abertura".
+
+---
+
 ## [0.7.0] — 2026-09-06
 
 ### Adicionado
-- **Definições → Condomínio → Prazos e exercício:** tabela dos exercícios
-  activos (os que têm saldos de abertura definidos), com o total de abertura e o
-  número de movimentos de cada ano.
+- **Definições → Condomínio → Prazos e exercício:** tabela dos exercícios, com o
+  total de abertura e o número de movimentos de cada ano.
   - Botão para **eliminar um exercício**, com confirmação em dois passos.
     Eliminar apaga os saldos de abertura e as quotas desse ano; os movimentos
     nunca são apagados por aqui.
   - Um exercício não pode ser eliminado se tiver movimentos lançados (é preciso
-    apagá-los primeiro) ou se for o exercício por omissão (muda-se primeiro o
-    "Ano do exercício por omissão"). Nesses casos aparece o motivo em vez do
-    botão.
+    apagá-los primeiro) ou se for o exercício activo (muda-se primeiro o "Ano do
+    exercício por omissão"). Nesses casos aparece o motivo em vez do botão.
 
 ---
 
@@ -175,6 +184,7 @@ mão.
   movimentos e devolvem totais, o que permite testá-las contra os números reais
   de 2026 sem ligação nenhuma.
 
+[0.7.1]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.7.1
 [0.7.0]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.7.0
 [0.6.0]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.5.0

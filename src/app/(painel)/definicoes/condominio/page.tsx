@@ -126,13 +126,14 @@ export default async function PaginaDefinicoesCondominio() {
 
         <div className="mt-8 border-t border-pergaminho-200 pt-6">
           <h3 className="font-display text-base font-semibold text-verdete-900">
-            Exercícios activos
+            Exercícios
           </h3>
           <p className="mt-1 text-sm text-pergaminho-600">
-            Cada exercício com saldos de abertura definidos. Um exercício só pode
-            ser eliminado se não tiver movimentos e não for o exercício por
-            omissão. Eliminar apaga os saldos de abertura e as quotas desse ano;
-            os movimentos nunca são apagados aqui.
+            Todos os anos com dados, mais o exercício activo — o que está em
+            &quot;Ano do exercício por omissão&quot;. Um exercício só pode ser
+            eliminado se não tiver movimentos e não for o activo. Eliminar apaga
+            os saldos de abertura e as quotas desse ano; os movimentos nunca são
+            apagados aqui.
           </p>
 
           <div className="mt-4 overflow-x-auto">
@@ -152,19 +153,15 @@ export default async function PaginaDefinicoesCondominio() {
               <tbody>
                 {exercicios.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={4}
-                      className="px-3 py-4 text-pergaminho-500"
-                    >
-                      Ainda não há exercícios com saldos de abertura.
+                    <td colSpan={4} className="px-3 py-4 text-pergaminho-500">
+                      Ainda não há exercícios.
                     </td>
                   </tr>
                 ) : (
                   exercicios.map((e) => {
-                    const ehPorOmissao = e.ano === anoPorOmissao;
-                    const bloqueado = ehPorOmissao || e.movimentos > 0;
-                    const motivo = ehPorOmissao
-                      ? "Exercício por omissão"
+                    const bloqueado = e.ativo || e.movimentos > 0;
+                    const motivo = e.ativo
+                      ? "Exercício activo"
                       : `${e.movimentos} movimento(s)`;
                     return (
                       <tr
@@ -176,14 +173,19 @@ export default async function PaginaDefinicoesCondominio() {
                           className="px-3 py-2.5 text-left font-medium whitespace-nowrap text-verdete-900"
                         >
                           {e.ano}
-                          {ehPorOmissao && (
+                          {e.ativo && (
                             <span className="ml-2 text-xs font-normal text-ocre-600">
-                              por omissão
+                              activo
+                            </span>
+                          )}
+                          {!e.temSaldos && (
+                            <span className="ml-2 text-xs font-normal text-pergaminho-400">
+                              sem abertura
                             </span>
                           )}
                         </th>
                         <td className="tabular px-3 py-2.5 text-pergaminho-600">
-                          {euros(e.aberturaTotal)}
+                          {e.temSaldos ? euros(e.aberturaTotal) : "—"}
                         </td>
                         <td className="tabular px-3 py-2.5 text-pergaminho-600">
                           {e.movimentos}
