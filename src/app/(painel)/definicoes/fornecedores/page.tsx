@@ -4,6 +4,7 @@ import FormularioAccao, { Campo } from "@/components/formulario-accao";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { Fornecedor } from "@/lib/tipos-bd";
 import { guardarFornecedor } from "../accoes";
+import BotaoApagarFornecedor from "./botao-apagar";
 
 export const metadata: Metadata = { title: "Fornecedores · Definições" };
 
@@ -17,7 +18,8 @@ export default async function PaginaDefinicoesFornecedores() {
   return (
     <section>
       <p className="mb-6 leading-relaxed text-pergaminho-600">
-        O IBAN fica visível apenas para a administração.
+        Só a administração vê esta secção. Edita os dados de cada fornecedor no
+        respectivo formulário; o IBAN fica visível apenas aqui.
       </p>
 
       <div className="flex flex-col gap-5">
@@ -27,6 +29,9 @@ export default async function PaginaDefinicoesFornecedores() {
               <input type="hidden" name="id" value={f.id} />
               <CamposFornecedor fornecedor={f} />
             </FormularioAccao>
+            <div className="mt-4 border-t border-pergaminho-200 pt-4">
+              <BotaoApagarFornecedor id={f.id} nome={f.nome} />
+            </div>
           </Painel>
         ))}
 
