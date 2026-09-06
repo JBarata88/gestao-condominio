@@ -2,39 +2,52 @@ import type { Metadata } from "next";
 import CartaoKpi from "@/components/cartao-kpi";
 import { saldosApos } from "@/lib/contas";
 import {
+  anoDeExercicio,
   carregarFracoes,
   carregarMovimentos,
+  carregarQuotasDoAno,
   carregarSaldosIniciais,
   definicao,
   limitesDoAno,
   paraCalculo,
   perfilAtual,
+  quotaEfetiva,
 } from "@/lib/dados";
 import { chaveMes, euros, MESES, somar } from "@/lib/formatos";
 import { fracoesEmAtraso, matrizQuotas, totalPorCobrar } from "@/lib/quotas";
 
 export const metadata: Metadata = { title: "Painel" };
 
-export default async function PaginaPainel() {
+export default async function PaginaPainel({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string }>;
+}) {
   const perfil = await perfilAtual();
   const admin = perfil?.admin === true;
 
-  const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
+  const { ano: anoParam } = await searchParams;
+  const ano = await anoDeExercicio(anoParam);
   const diaLimite = await definicao<number>("dia_limite_quota", 8);
 
   const [inicio, fim] = limitesDoAno(ano);
-  const [movimentos, fracoes, abertura] = await Promise.all([
+  const [movimentos, fracoes, abertura, quotasDoAno] = await Promise.all([
     carregarMovimentos(inicio, fim),
     carregarFracoes(),
     carregarSaldosIniciais(ano),
+    carregarQuotasDoAno(ano),
   ]);
 
   const calculo = paraCalculo(movimentos);
   const saldos = saldosApos(calculo, abertura);
 
   const hoje = new Date().toISOString().slice(0, 10);
-  const mesCorrente = chaveMes(hoje);
-  const doMes = calculo.filter((m) => chaveMes(m.data) === mesCorrente);
+  // Num ano passado ou futuro não há "mês corrente"; mostra-se Dezembro, o
+  // fecho do exercício.
+  const anoCivil = new Date().getUTCFullYear();
+  const mesReferencia = ano === anoCivil ? new Date().getUTCMonth() + 1 : 12;
+  const chaveMesReferencia = `${ano}-${String(mesReferencia).padStart(2, "0")}`;
+  const doMes = calculo.filter((m) => chaveMes(m.data) === chaveMesReferencia);
   const receitasMes = somar(doMes.map((m) => m.receita));
   const despesasMes = somar(doMes.map((m) => m.despesa));
 
@@ -43,7 +56,7 @@ export default async function PaginaPainel() {
       id: f.id,
       letra: f.letra,
       andar: f.andar,
-      quotaMensal: Number(f.quota_mensal),
+      quotaMensal: quotaEfetiva(f, quotasDoAno),
       ativo: f.ativo,
     })),
     // Todos os recebimentos de Quotizações contam, com ou sem mês etiquetado:
@@ -61,7 +74,7 @@ export default async function PaginaPainel() {
 
   const emAtraso = fracoesEmAtraso(linhas);
   const porCobrar = totalPorCobrar(linhas);
-  const nomeMes = MESES[new Date().getMonth()];
+  const nomeMes = `${MESES[mesReferencia - 1]} de ${ano}`;
 
   return (
     <div className="mx-auto max-w-6xl">

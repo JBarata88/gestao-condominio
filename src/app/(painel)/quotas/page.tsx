@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { CabecalhoPagina, Etiqueta, Painel, Vazio } from "@/components/ui";
 import {
-  carregarCategorias,
+  anoDeExercicio,
   carregarFracoes,
   carregarMovimentos,
+  carregarQuotasDoAno,
   definicao,
   limitesDoAno,
   perfilAtual,
+  quotaEfetiva,
 } from "@/lib/dados";
 import { euros, MESES_ABREVIADOS } from "@/lib/formatos";
 import { matrizQuotas, totalPorCobrar, type EstadoQuota } from "@/lib/quotas";
-import RegistarPagamento from "./registar-pagamento";
 
 export const metadata: Metadata = { title: "Quotas" };
 
@@ -32,20 +33,24 @@ const SIMBOLOS: Record<EstadoQuota, string> = {
   isento: "—",
 };
 
-export default async function PaginaQuotas() {
+export default async function PaginaQuotas({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string }>;
+}) {
   const perfil = await perfilAtual();
-  const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
+  const { ano: anoParam } = await searchParams;
+  const ano = await anoDeExercicio(anoParam);
   const diaLimite = await definicao<number>("dia_limite_quota", 8);
   const [inicio, fim] = limitesDoAno(ano);
 
-  const [fracoes, movimentos, categorias] = await Promise.all([
+  const [fracoes, movimentos, quotasDoAno] = await Promise.all([
     carregarFracoes(),
     carregarMovimentos(inicio, fim),
-    carregarCategorias(),
+    carregarQuotasDoAno(ano),
   ]);
 
   const admin = perfil?.admin === true;
-  const categoriaQuotas = categorias.find((c) => c.nome === "Quotizações");
 
   const hoje = new Date().toISOString().slice(0, 10);
   const linhas = matrizQuotas({
@@ -53,7 +58,7 @@ export default async function PaginaQuotas() {
       id: f.id,
       letra: f.letra,
       andar: f.andar,
-      quotaMensal: Number(f.quota_mensal),
+      quotaMensal: quotaEfetiva(f, quotasDoAno),
       ativo: f.ativo,
     })),
     // Todos os recebimentos de Quotizações contam, com ou sem mês etiquetado:
@@ -93,23 +98,6 @@ export default async function PaginaQuotas() {
               </span>
             )}
           </div>
-
-          {admin && categoriaQuotas && (
-            <div className="mb-6">
-              <RegistarPagamento
-                categoriaQuotasId={categoriaQuotas.id}
-                ano={ano}
-                fracoes={fracoes
-                  .filter((f) => f.ativo)
-                  .map((f) => ({
-                    id: f.id,
-                    letra: f.letra,
-                    andar: f.andar,
-                    quotaMensal: Number(f.quota_mensal),
-                  }))}
-              />
-            </div>
-          )}
 
           <Painel>
             {/* A tabela é larga: rola dentro do painel em vez de empurrar a página. */}

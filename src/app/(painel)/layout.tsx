@@ -1,6 +1,13 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Navegacao, { type ItemNavegacao } from "@/components/navegacao";
-import { configurado, perfilAtual } from "@/lib/dados";
+import SeletorAno from "@/components/seletor-ano";
+import {
+  anoDeExercicio,
+  anosComExercicio,
+  configurado,
+  perfilAtual,
+} from "@/lib/dados";
 import PorConfigurar from "@/components/por-configurar";
 
 /**
@@ -39,6 +46,10 @@ export default async function LayoutPainel({
   if (!perfil) redirect("/entrar");
 
   const admin = perfil.admin;
+  const [anos, anoActivo] = await Promise.all([
+    anosComExercicio(),
+    anoDeExercicio(),
+  ]);
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
@@ -48,6 +59,11 @@ export default async function LayoutPainel({
         papel={admin ? "Administração" : "Condómino"}
       />
       <main className="min-w-0 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+        <div className="mb-8 flex justify-end border-b border-pergaminho-200 pb-4">
+          <Suspense fallback={null}>
+            <SeletorAno anos={anos} anoActivo={anoActivo} />
+          </Suspense>
+        </div>
         {children}
       </main>
     </div>

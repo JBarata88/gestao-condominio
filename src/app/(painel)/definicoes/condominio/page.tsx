@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { Painel } from "@/components/ui";
 import FormularioAccao, { Campo } from "@/components/formulario-accao";
 import {
+  anoDeExercicio,
   carregarCondominio,
   carregarSaldosIniciais,
   definicao,
+  temSaldosIniciais,
 } from "@/lib/dados";
 import {
+  abrirExercicio,
   guardarCondominio,
   guardarDefinicoes,
   guardarSaldosIniciais,
@@ -15,13 +18,20 @@ import {
 export const metadata: Metadata = { title: "Condomínio · Definições" };
 
 export default async function PaginaDefinicoesCondominio() {
-  const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
+  const ano = await anoDeExercicio();
 
-  const [condominio, saldos] = await Promise.all([
+  const [condominio, saldos, saldosDefinidos] = await Promise.all([
     carregarCondominio(),
     carregarSaldosIniciais(ano),
+    temSaldosIniciais(ano),
   ]);
 
+  // O campo "Ano do exercício" mexe no valor por omissão guardado, não no ano
+  // que está a ser consultado através do seletor no topo da página.
+  const anoPorOmissao = await definicao<number>(
+    "ano_exercicio",
+    new Date().getFullYear(),
+  );
   const diaLimite = await definicao<number>("dia_limite_quota", 8);
   const localidade = await definicao<string>(
     "localidade_recibos",
@@ -90,10 +100,11 @@ export default async function PaginaDefinicoesCondominio() {
             />
             <Campo
               nome="ano_exercicio"
-              etiqueta="Ano do exercício"
+              etiqueta="Ano do exercício por omissão"
               tipo="number"
-              valor={ano}
+              valor={anoPorOmissao}
               obrigatorio
+              dica="O ano que aparece a quem entra sem escolher outro no seletor."
             />
             <Campo
               nome="localidade_recibos"
@@ -109,6 +120,20 @@ export default async function PaginaDefinicoesCondominio() {
           </div>
         </FormularioAccao>
       </Painel>
+
+      {!saldosDefinidos && (
+        <Painel
+          titulo={`Abrir o exercício de ${ano}`}
+          descricao={`Ainda não há saldos de abertura para ${ano}. Podes transportá-los do fecho de ${ano - 1}: a app calcula os saldos de caixa e banco no fim desse ano e usa-os como abertura deste, transporta as quotas em vigor e passa a considerar ${ano} o exercício em curso. Podes ajustar tudo depois.`}
+        >
+          <FormularioAccao
+            accao={abrirExercicio}
+            rotulo={`Abrir exercício a partir do fecho de ${ano - 1}`}
+          >
+            <input type="hidden" name="ano" value={ano} />
+          </FormularioAccao>
+        </Painel>
+      )}
 
       <Painel
         titulo="Saldos de abertura"

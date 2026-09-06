@@ -2,7 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { clienteServidor } from "@/lib/supabase/servidor";
-import { perfilAtual } from "@/lib/dados";
+import {
+  carregarFracoes,
+  carregarMovimentos,
+  carregarQuotasDoAno,
+  carregarSaldosIniciais,
+  limitesDoAno,
+  paraCalculo,
+  perfilAtual,
+} from "@/lib/dados";
+import { saldosApos } from "@/lib/contas";
+import { euros } from "@/lib/formatos";
 
 export type Resultado = { ok: boolean; mensagem: string };
 
@@ -256,6 +266,168 @@ export async function guardarSaldosIniciais(
 
     revalidatePath("/", "layout");
     return { ok: true, mensagem: `Saldos de abertura de ${ano} guardados.` };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Quotas por ano
+// ---------------------------------------------------------------------------
+/**
+ * Grava a quota mensal de cada fração para um ano.
+ *
+ * O formulário traz um campo `quota-<fracaoId>` por fração. Um campo vazio
+ * apaga a linha desse ano, fazendo a fração voltar à quota base
+ * (fracoes.quota_mensal).
+ */
+export async function guardarQuotasDoAno(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const supabase = await clienteServidor();
+
+    const ano = numero(dados, "ano");
+    if (ano === null || !Number.isInteger(ano) || ano < 1900 || ano > 2200) {
+      return { ok: false, mensagem: "Ano inválido." };
+    }
+
+    const aGravar: Array<{
+      fracao_id: string;
+      ano: number;
+      quota_mensal: number;
+      atualizado_em: string;
+    }> = [];
+    const aApagar: string[] = [];
+
+    for (const [chave, valor] of dados.entries()) {
+      if (!chave.startsWith("quota-")) continue;
+      const fracaoId = chave.slice("quota-".length);
+      const bruto = typeof valor === "string" ? valor.trim() : "";
+      if (bruto === "") {
+        aApagar.push(fracaoId);
+        continue;
+      }
+      const n = Number(bruto.replace(",", "."));
+      if (!Number.isFinite(n) || n < 0) {
+        return {
+          ok: false,
+          mensagem: "Há uma quota com um valor inválido. Usa números, com vírgula ou ponto.",
+        };
+      }
+      aGravar.push({
+        fracao_id: fracaoId,
+        ano,
+        quota_mensal: n,
+        atualizado_em: new Date().toISOString(),
+      });
+    }
+
+    if (aGravar.length > 0) {
+      const { error } = await supabase
+        .from("quotas_fracao")
+        .upsert(aGravar, { onConflict: "fracao_id,ano" });
+      if (error) return { ok: false, mensagem: error.message };
+    }
+    if (aApagar.length > 0) {
+      const { error } = await supabase
+        .from("quotas_fracao")
+        .delete()
+        .eq("ano", ano)
+        .in("fracao_id", aApagar);
+      if (error) return { ok: false, mensagem: error.message };
+    }
+
+    revalidatePath("/quotas");
+    revalidatePath("/");
+    revalidatePath("/definicoes", "layout");
+    return { ok: true, mensagem: `Quotas de ${ano} guardadas.` };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Abertura de exercício
+// ---------------------------------------------------------------------------
+/**
+ * Abre um exercício novo a partir do fecho do anterior.
+ *
+ * Calcula os saldos de caixa e banco no fim do ano anterior e usa-os como
+ * abertura do novo, transporta as quotas em vigor e passa a definição
+ * "ano_exercicio" para o ano novo. Não mexe se o ano novo já tiver saldos de
+ * abertura definidos à mão.
+ */
+export async function abrirExercicio(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const supabase = await clienteServidor();
+
+    const ano = numero(dados, "ano");
+    if (ano === null || !Number.isInteger(ano) || ano < 1900 || ano > 2200) {
+      return { ok: false, mensagem: "Ano inválido." };
+    }
+    const anoAnterior = ano - 1;
+    const [inicio, fim] = limitesDoAno(anoAnterior);
+
+    const [movimentos, aberturaAnterior, existente, quotasAnteriores, fracoes] =
+      await Promise.all([
+        carregarMovimentos(inicio, fim),
+        carregarSaldosIniciais(anoAnterior),
+        supabase.from("saldos_iniciais").select("ano").eq("ano", ano).maybeSingle(),
+        carregarQuotasDoAno(anoAnterior),
+        carregarFracoes(),
+      ]);
+
+    if (existente.data) {
+      return {
+        ok: false,
+        mensagem: `O exercício de ${ano} já tem saldos de abertura. Ajusta-os no formulário abaixo.`,
+      };
+    }
+
+    const fecho = saldosApos(paraCalculo(movimentos), aberturaAnterior);
+
+    const { error: erroSaldos } = await supabase.from("saldos_iniciais").insert({
+      ano,
+      caixa: fecho.caixa,
+      deposito_ordem: fecho.depositoOrdem,
+      deposito_prazo: fecho.depositoPrazo,
+      conta_poupanca: fecho.contaPoupanca,
+      atualizado_em: new Date().toISOString(),
+    });
+    if (erroSaldos) return { ok: false, mensagem: erroSaldos.message };
+
+    const quotasNovas = fracoes
+      .filter((f) => f.ativo)
+      .map((f) => ({
+        fracao_id: f.id,
+        ano,
+        quota_mensal: quotasAnteriores.get(f.id) ?? Number(f.quota_mensal),
+        atualizado_em: new Date().toISOString(),
+      }))
+      .filter((q) => q.quota_mensal > 0);
+    if (quotasNovas.length > 0) {
+      await supabase
+        .from("quotas_fracao")
+        .upsert(quotasNovas, { onConflict: "fracao_id,ano", ignoreDuplicates: true });
+    }
+
+    await supabase.from("definicoes").upsert(
+      { chave: "ano_exercicio", valor: ano, atualizado_em: new Date().toISOString() },
+      { onConflict: "chave" },
+    );
+
+    revalidatePath("/", "layout");
+    return {
+      ok: true,
+      mensagem: `Exercício de ${ano} aberto. Abertura transportada: caixa ${euros(fecho.caixa)}, banco ${euros(fecho.depositoOrdem)}.`,
+    };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
   }

@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { CabecalhoPagina, Vazio } from "@/components/ui";
 import { comSaldoAcumulado } from "@/lib/contas";
 import {
+  anoDeExercicio,
   carregarCategorias,
   carregarFracoes,
   carregarMovimentos,
   carregarSaldosIniciais,
-  definicao,
   limitesDoAno,
   perfilAtual,
 } from "@/lib/dados";
@@ -20,15 +20,20 @@ export const metadata: Metadata = { title: "Movimentos" };
 export default async function PaginaMovimentos({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; categoria?: string; fracao?: string }>;
+  searchParams: Promise<{
+    mes?: string;
+    categoria?: string;
+    fracao?: string;
+    ano?: string;
+  }>;
 }) {
   const perfil = await perfilAtual();
   const admin = perfil?.admin === true;
 
-  const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
-  const [inicioAno, fimAno] = limitesDoAno(ano);
-
   const params = await searchParams;
+
+  const ano = await anoDeExercicio(params.ano);
+  const [inicioAno, fimAno] = limitesDoAno(ano);
   const mesNumero = Number(params.mes ?? 0);
   const mes =
     Number.isInteger(mesNumero) && mesNumero >= 1 && mesNumero <= 12

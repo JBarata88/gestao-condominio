@@ -101,6 +101,13 @@ export type SaldosIniciais = {
   atualizado_em: string;
 };
 
+export type QuotaFracao = {
+  fracao_id: string;
+  ano: number;
+  quota_mensal: number;
+  atualizado_em: string;
+};
+
 export type Extrato = {
   id: string;
   nome_ficheiro: string;
@@ -246,6 +253,7 @@ export type BaseDados = {
       categorias: Tabela<Categoria>;
       movimentos: Tabela<Movimento>;
       saldos_iniciais: Tabela<SaldosIniciais>;
+      quotas_fracao: Tabela<QuotaFracao>;
       extratos: Tabela<Extrato>;
       extrato_linhas: Tabela<ExtratoLinha>;
       regras_conciliacao: Tabela<RegraConciliacao>;

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { clienteServidor } from "./supabase/servidor";
 import type {
   Categoria,
@@ -110,6 +111,89 @@ export async function definicao<T>(chave: string, omissao: T): Promise<T> {
   return (valor ?? omissao) as T;
 }
 
+// ---------------------------------------------------------------------------
+// Ano de exercício
+//
+// A app serve vários anos na mesma instalação. A definição "ano_exercicio" é
+// só o ano por omissão; o seletor de ano, guardado numa cookie, e um
+// parâmetro ?ano= na ligação permitem consultar qualquer ano com dados.
+// ---------------------------------------------------------------------------
+const ANO_MIN = 1900;
+const ANO_MAX = 2200;
+const COOKIE_ANO = "ano_exercicio_vista";
+
+/** True para um ano de exercício plausível, seja number ou string. */
+export function anoValido(v: unknown): boolean {
+  const n = Number(v);
+  return Number.isInteger(n) && n >= ANO_MIN && n <= ANO_MAX;
+}
+
+/**
+ * Ano de exercício a mostrar. Por ordem de prioridade:
+ *   1. o parâmetro ?ano= da ligação (para ligações partilháveis e o MOAF)
+ *   2. a cookie do seletor de ano
+ *   3. a definição global "ano_exercicio"
+ *   4. o ano civil actual
+ */
+export async function anoDeExercicio(anoParam?: string | number): Promise<number> {
+  if (anoValido(anoParam)) return Number(anoParam);
+  const daCookie = (await cookies()).get(COOKIE_ANO)?.value;
+  if (anoValido(daCookie)) return Number(daCookie);
+  return definicao<number>("ano_exercicio", new Date().getFullYear());
+}
+
+/**
+ * Anos que vale a pena oferecer no seletor: os que têm movimentos ou saldos
+ * de abertura, mais o ano em curso e o seguinte, para poder abrir o exercício
+ * novo antes de ter lá qualquer movimento.
+ */
+export const anosComExercicio = cache(async (): Promise<number[]> => {
+  const supabase = await clienteServidor();
+  const [maisAntigo, maisRecente, saldos] = await Promise.all([
+    supabase
+      .from("movimentos")
+      .select("data")
+      .order("data", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("movimentos")
+      .select("data")
+      .order("data", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("saldos_iniciais").select("ano"),
+  ]);
+
+  const civilActual = new Date().getFullYear();
+  const anos = new Set<number>([civilActual, civilActual + 1]);
+  anos.add(await definicao<number>("ano_exercicio", civilActual));
+  for (const s of saldos.data ?? []) {
+    if (anoValido(s.ano)) anos.add(Number(s.ano));
+  }
+
+  const min = maisAntigo.data
+    ? Number(maisAntigo.data.data.slice(0, 4))
+    : civilActual;
+  const max = maisRecente.data
+    ? Number(maisRecente.data.data.slice(0, 4))
+    : civilActual;
+  for (let a = min; a <= max; a++) if (anoValido(a)) anos.add(a);
+
+  return [...anos].filter(anoValido).sort((a, b) => b - a);
+});
+
+/** True quando já existe uma linha de saldos de abertura para o ano. */
+export const temSaldosIniciais = cache(async (ano: number): Promise<boolean> => {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("saldos_iniciais")
+    .select("ano")
+    .eq("ano", ano)
+    .maybeSingle();
+  return data !== null;
+});
+
 export const carregarSaldosIniciais = cache(
   async (ano: number): Promise<SaldosAbertura> => {
     const supabase = await clienteServidor();
@@ -128,6 +212,34 @@ export const carregarSaldosIniciais = cache(
     };
   },
 );
+
+/**
+ * Quota mensal de cada fração num ano, indexada por fracao_id.
+ *
+ * Só traz as frações que têm um valor definido para esse ano. Para as
+ * restantes usa-se a quota base da fração, através de {@link quotaEfetiva}.
+ */
+export const carregarQuotasDoAno = cache(
+  async (ano: number): Promise<Map<string, number>> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase
+      .from("quotas_fracao")
+      .select("fracao_id, quota_mensal")
+      .eq("ano", ano);
+
+    return new Map(
+      (data ?? []).map((q) => [q.fracao_id, Number(q.quota_mensal)]),
+    );
+  },
+);
+
+/** Quota de uma fração num ano: a do próprio ano, ou a quota base da fração. */
+export function quotaEfetiva(
+  fracao: { id: string; quota_mensal: number },
+  quotasDoAno: Map<string, number>,
+): number {
+  return quotasDoAno.get(fracao.id) ?? Number(fracao.quota_mensal);
+}
 
 export type MovimentoDetalhado = Movimento & {
   categorias: Pick<Categoria, "nome" | "natureza" | "linha_moaf"> | null;

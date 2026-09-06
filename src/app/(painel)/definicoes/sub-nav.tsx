@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const ABAS = [
   { href: "/definicoes/condominio", rotulo: "Condomínio" },
   { href: "/definicoes/fracoes", rotulo: "Frações" },
+  { href: "/definicoes/quotas", rotulo: "Quotas do ano" },
   { href: "/definicoes/contas", rotulo: "Contas" },
   { href: "/definicoes/fornecedores", rotulo: "Fornecedores" },
   { href: "/definicoes/extratos", rotulo: "Extratos bancários" },

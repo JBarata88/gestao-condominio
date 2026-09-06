@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { construirMapa } from "@/lib/contas";
 import {
+  anoDeExercicio,
+  anoValido,
   carregarCategorias,
   carregarCondominio,
   carregarMovimentos,
@@ -20,10 +22,11 @@ export async function GET(pedido: NextRequest) {
   }
 
   const params = pedido.nextUrl.searchParams;
-  const ano = Number(params.get("ano") ?? new Date().getFullYear());
-  if (!Number.isInteger(ano) || ano < 1900 || ano > 2200) {
+  const anoParam = params.get("ano");
+  if (anoParam !== null && !anoValido(anoParam)) {
     return NextResponse.json({ erro: "Ano inválido." }, { status: 400 });
   }
+  const ano = await anoDeExercicio(anoParam ?? undefined);
 
   const inicio = params.get("inicio") ?? `${ano}-01-01`;
   const fim = params.get("fim") ?? `${ano}-12-31`;

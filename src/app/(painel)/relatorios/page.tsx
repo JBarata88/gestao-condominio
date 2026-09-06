@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { CabecalhoPagina, Painel } from "@/components/ui";
 import { construirMapa } from "@/lib/contas";
 import {
+  anoDeExercicio,
   carregarCategorias,
   carregarResumoExercicio,
   carregarSaldosIniciais,
-  definicao,
   limitesDoAno,
   perfilAtual,
 } from "@/lib/dados";
@@ -16,15 +16,15 @@ export const metadata: Metadata = { title: "Relatórios" };
 export default async function PaginaRelatorios({
   searchParams,
 }: {
-  searchParams: Promise<{ inicio?: string; fim?: string }>;
+  searchParams: Promise<{ inicio?: string; fim?: string; ano?: string }>;
 }) {
   const perfil = await perfilAtual();
   const admin = perfil?.admin === true;
 
-  const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
-  const [inicioAno, fimAno] = limitesDoAno(ano);
-
   const params = await searchParams;
+
+  const ano = await anoDeExercicio(params.ano);
+  const [inicioAno, fimAno] = limitesDoAno(ano);
   const inicio = /^\d{4}-\d{2}-\d{2}$/.test(params.inicio ?? "")
     ? params.inicio!
     : inicioAno;
@@ -69,6 +69,7 @@ export default async function PaginaRelatorios({
         }
       >
         <form method="get" className="flex flex-wrap items-end gap-4">
+          <input type="hidden" name="ano" value={ano} />
           <div className="flex flex-col gap-2">
             <label htmlFor="inicio" className="text-sm font-medium text-verdete-800">
               Início

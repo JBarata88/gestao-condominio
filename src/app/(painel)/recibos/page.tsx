@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CabecalhoPagina, Painel } from "@/components/ui";
 import {
+  anoDeExercicio,
   carregarFracoes,
   carregarMovimentosQuota,
   definicao,
@@ -13,11 +14,16 @@ import FormularioRecibos, { type MovimentoQuotaEscolha } from "./formulario";
 
 export const metadata: Metadata = { title: "Recibos" };
 
-export default async function PaginaRecibos() {
+export default async function PaginaRecibos({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string }>;
+}) {
   const perfil = await perfilAtual();
   if (!perfil?.admin) redirect("/");
 
-  const ano = await definicao<number>("ano_exercicio", new Date().getFullYear());
+  const { ano: anoParam } = await searchParams;
+  const ano = await anoDeExercicio(anoParam);
   const [inicio, fim] = limitesDoAno(ano);
 
   const [fracoes, movimentosQuota, valorPresenca] = await Promise.all([
