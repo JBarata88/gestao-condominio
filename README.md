@@ -5,6 +5,9 @@ origem e aplicação de fundos, recibos e importação do extrato bancário.
 
 Substitui as folhas de Excel e os documentos Word que eram preenchidos à mão.
 
+O histórico de alterações, versão a versão, está em [`CHANGELOG.md`](CHANGELOG.md).
+A versão em uso aparece no canto inferior esquerdo da aplicação.
+
 ## O que faz
 
 - **Painel** com o valor em caixa, o valor no banco, o total disponível, o
@@ -19,10 +22,12 @@ Substitui as folhas de Excel e os documentos Word que eram preenchidos à mão.
   do ficheiro `MOAF` que já usavas.
 - **Recibos** em Word, nos três modelos existentes: quota, presença em
   assembleia e documento de caixa.
-- **Definições** em cinco áreas: Condomínio (dados, prazos e saldos de
-  abertura), Frações (condóminos e quem é da administração), Contas (criar e
-  atribuir os acessos de login), Fornecedores e importação de Extratos
-  bancários.
+- **Definições** em seis áreas: Condomínio (dados, prazos, saldos de abertura e
+  abertura de exercício), Frações (condóminos e quem é da administração), Quotas
+  do ano (quota de cada fração por exercício), Contas (criar e atribuir os
+  acessos de login), Fornecedores e importação de Extratos bancários.
+- **Vários exercícios**: seletor de ano em todas as páginas, com histórico
+  consultável. Ver [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Uma correção face às folhas antigas
 
@@ -136,7 +141,7 @@ movimentos do ano é importado junto.
 ## Verificação
 
 ```bash
-npm test                                  # 70 testes das regras de negócio
+npm test                                  # testes das regras de negócio
 npx tsx scripts/verificar-ligacao.ts      # configuração do Supabase e segurança
 npx tsx scripts/verificar-mapa.ts         # compara o mapa com a folha real
 npx tsx scripts/verificar-recibos.ts      # compara os recibos com os .docx

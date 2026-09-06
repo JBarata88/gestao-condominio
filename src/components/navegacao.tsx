@@ -6,6 +6,9 @@ import { useState } from "react";
 
 export type ItemNavegacao = { href: string; rotulo: string };
 
+/** Vem do package.json, injectada em next.config.ts. */
+const VERSAO = process.env.NEXT_PUBLIC_APP_VERSION ?? "—";
+
 export default function Navegacao({
   itens,
   nome,
@@ -94,6 +97,7 @@ export default function Navegacao({
                 Terminar sessão
               </button>
             </form>
+            <p className="mt-3 text-xs text-pergaminho-400">Versão {VERSAO}</p>
           </div>
         </div>
       </nav>
