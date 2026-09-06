@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Botao, Etiqueta, Painel, Vazio } from "@/components/ui";
 import { Campo } from "@/components/formulario-accao";
@@ -8,6 +8,7 @@ import {
   apagarConta,
   atualizarConta,
   criarConta,
+  redefinirPalavraPasse,
   type Resultado,
 } from "./accoes";
 
@@ -129,6 +130,48 @@ function FormularioNovaConta({ fracoes }: { fracoes: FracaoOpcao[] }) {
 }
 
 // ---------------------------------------------------------------------------
+// Redefinir palavra-passe de uma conta
+// ---------------------------------------------------------------------------
+function FormularioPalavraPasse({ id }: { id: string }) {
+  const [estado, despachar] = useActionState<Resultado | null, FormData>(
+    redefinirPalavraPasse,
+    null,
+  );
+  const campo = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (estado?.ok && campo.current) campo.current.value = "";
+  }, [estado]);
+
+  return (
+    <form action={despachar} className="flex flex-col gap-3">
+      <input type="hidden" name="id" value={id} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor={`pw-${id}`}
+            className="text-sm font-medium text-verdete-800"
+          >
+            Nova palavra-passe
+          </label>
+          <input
+            ref={campo}
+            id={`pw-${id}`}
+            name="palavra_passe"
+            type="text"
+            autoComplete="new-password"
+            placeholder="pelo menos 8 caracteres"
+            className="rounded-lg border border-pergaminho-300 bg-white px-3 py-2.5 text-verdete-950 transition-colors duration-150 hover:border-pergaminho-400 focus:border-verdete-500 focus:outline-none"
+          />
+        </div>
+        <BotaoSubmeter rotulo="Alterar palavra-passe" />
+      </div>
+      <Mensagem estado={estado} />
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Linha de uma conta existente
 // ---------------------------------------------------------------------------
 function LinhaConta({
@@ -218,6 +261,10 @@ function LinhaConta({
           <Mensagem estado={estado} />
         </div>
       </form>
+
+      <div className="mt-4 border-t border-pergaminho-200 pt-4">
+        <FormularioPalavraPasse id={conta.id} />
+      </div>
 
       <div className="mt-4 border-t border-pergaminho-200 pt-4">
         {apagarEstado && !apagarEstado.ok ? (

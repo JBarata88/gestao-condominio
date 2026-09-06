@@ -132,6 +132,42 @@ export async function atualizarConta(
 }
 
 // ---------------------------------------------------------------------------
+// Redefinir a palavra-passe de uma conta
+// ---------------------------------------------------------------------------
+export async function redefinirPalavraPasse(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+
+    const id = texto(dados, "id");
+    if (!id) return { ok: false, mensagem: "Conta não indicada." };
+
+    const nova = texto(dados, "palavra_passe");
+    if (!nova || nova.length < 8) {
+      return {
+        ok: false,
+        mensagem: "A palavra-passe tem de ter pelo menos 8 caracteres.",
+      };
+    }
+
+    const supabase = clienteAdministrativo();
+    const { error } = await supabase.auth.admin.updateUserById(id, {
+      password: nova,
+    });
+    if (error) return { ok: false, mensagem: error.message };
+
+    return {
+      ok: true,
+      mensagem: "Palavra-passe alterada. Comunica-a ao titular da conta.",
+    };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Apagar conta
 // ---------------------------------------------------------------------------
 export async function apagarConta(
