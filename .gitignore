@@ -1,0 +1,25 @@
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+.env
+.env.local
+.env*.local
+
+# Dados pessoais reais: nomes dos condóminos, NIF e NIB do condomínio.
+# O repositório é público, por isso nada disto pode ser versionado.
+ASSETS/
+dados-locais/
+*.xlsx
+*.xls
+*.docx
+
+.DS_Store
+Thumbs.db
+
+temporary screenshots/
+
+.vercel

@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Sistema de design — Gestão de Condomínio
+   Paleta própria: verdete profundo com acento em ocre.
+   Nada de azul/índigo por omissão da Tailwind.
+   ========================================================================== */
+
+@theme {
+  /* --- Verdete: cor de marca, derivada de #274A43 --- */
+  --color-verdete-50: #f1f6f4;
+  --color-verdete-100: #dde9e5;
+  --color-verdete-200: #bcd3cc;
+  --color-verdete-300: #90b5aa;
+  --color-verdete-400: #629186;
+  --color-verdete-500: #427468;
+  --color-verdete-600: #2f5c52;
+  --color-verdete-700: #274a43;
+  --color-verdete-800: #223b36;
+  --color-verdete-900: #1e322e;
+  --color-verdete-950: #0f1d1b;
+
+  /* --- Ocre: acento, chamadas de atenção e valores em destaque --- */
+  --color-ocre-50: #fdf7ed;
+  --color-ocre-100: #f8e9cc;
+  --color-ocre-200: #f0d296;
+  --color-ocre-300: #e5b65c;
+  --color-ocre-400: #d99e33;
+  --color-ocre-500: #ce8a2b;
+  --color-ocre-600: #b0701f;
+  --color-ocre-700: #8c551d;
+  --color-ocre-800: #74451f;
+  --color-ocre-900: #61391d;
+
+  /* --- Pergaminho: neutros quentes, fundo e texto --- */
+  --color-pergaminho-50: #faf8f4;
+  --color-pergaminho-100: #f2efe7;
+  --color-pergaminho-200: #e6e1d5;
+  --color-pergaminho-300: #d2caba;
+  --color-pergaminho-400: #ada394;
+  --color-pergaminho-500: #8b8171;
+  --color-pergaminho-600: #6f6659;
+  --color-pergaminho-700: #5a5348;
+  --color-pergaminho-800: #4a443c;
+  --color-pergaminho-900: #3e3933;
+
+  /* --- Semânticos --- */
+  --color-saldo-positivo: #3f7a4e;
+  --color-saldo-negativo: #a63a2b;
+  --color-atraso: #b0701f;
+
+  /* --- Tipografia: serifado de display + sem serifas para corpo --- */
+  --font-display: var(--fonte-display), ui-serif, Georgia, serif;
+  --font-sans: var(--fonte-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Consolas", monospace;
+
+  /* --- Sombras em camadas, tingidas com a cor de tinta --- */
+  --shadow-baixo: 0 1px 2px rgb(15 29 27 / 0.04), 0 2px 6px rgb(15 29 27 / 0.05);
+  --shadow-medio: 0 2px 4px rgb(15 29 27 / 0.04),
+    0 8px 20px -4px rgb(15 29 27 / 0.1);
+  --shadow-alto: 0 4px 8px rgb(15 29 27 / 0.05),
+    0 20px 44px -8px rgb(15 29 27 / 0.16);
+  --shadow-ocre: 0 1px 2px rgb(97 57 29 / 0.08),
+    0 8px 24px -6px rgb(97 57 29 / 0.22);
+
+  /* --- Curvas de animação com sensação de mola --- */
+  --ease-mola: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-saida: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ==========================================================================
+   Espaçamento intencional: tokens nomeados em vez de degraus arbitrários
+   ========================================================================== */
+:root {
+  --esp-justo: 0.5rem;
+  --esp-base: 1rem;
+  --esp-folgado: 1.5rem;
+  --esp-seccao: 2.5rem;
+  --esp-bloco: 4rem;
+
+  /* Sistema de profundidade: base -> elevado -> flutuante */
+  --plano-base: var(--color-pergaminho-100);
+  --plano-elevado: #ffffff;
+  --plano-flutuante: #ffffff;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+body {
+  background-color: var(--plano-base);
+  color: var(--color-verdete-950);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+/* Textura subtil de grão, para dar profundidade ao fundo liso */
+.grao::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23r)' opacity='0.055'/%3E%3C/svg%3E");
+}
+
+/* Foco visível consistente em toda a aplicação */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-ocre-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respeita quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Números alinhados em tabelas de valores */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

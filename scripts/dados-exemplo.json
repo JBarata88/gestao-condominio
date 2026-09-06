@@ -1,0 +1,53 @@
+{
+  "_leia_me": "Copia este ficheiro para dados-locais/condominio.json e substitui pelos dados reais. A pasta dados-locais/ está no .gitignore, por isso nada disto vai para o GitHub.",
+
+  "condominio": {
+    "nome": "CONDOMINIO DO LOTE 0",
+    "nome_recibos": "CONDOMÍNIO DO Nº 0",
+    "morada": "RUA EXEMPLO, Nº 0",
+    "codigo_postal": "0000-000",
+    "localidade": "LOCALIDADE",
+    "nif": "000 000 000",
+    "nib": "0000.0000.00000000000.00",
+    "iban": "PT50 0000 0000 0000 0000 0000 0"
+  },
+
+  "saldos_iniciais": {
+    "ano": 2026,
+    "caixa": 0,
+    "deposito_ordem": 0,
+    "deposito_prazo": 0,
+    "conta_poupanca": 0
+  },
+
+  "fracoes": [
+    {
+      "letra": "A",
+      "andar": "1º DTO",
+      "condomino_nome": "Nome do Condómino A",
+      "tratamento": "masculino",
+      "email": null,
+      "telefone": null,
+      "quota_mensal": 0
+    },
+    {
+      "letra": "B",
+      "andar": "1º ESQ",
+      "condomino_nome": "Nome da Condómina B",
+      "tratamento": "feminino",
+      "email": null,
+      "telefone": null,
+      "quota_mensal": 0
+    }
+  ],
+
+  "fornecedores": [
+    {
+      "nome": "Nome do fornecedor",
+      "tipo": "limpeza",
+      "email": null,
+      "telefone": null,
+      "iban": null
+    }
+  ]
+}
