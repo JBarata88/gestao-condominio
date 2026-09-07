@@ -92,11 +92,9 @@ export default async function PaginaQuotas({
         <>
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <Etiqueta tom="negativo">Por cobrar: {euros(porCobrar)}</Etiqueta>
-            {admin && (
-              <span className="text-sm text-pergaminho-600">
-                Total de {linhas.length} fração(ões) no mapa.
-              </span>
-            )}
+            <span className="text-sm text-pergaminho-600">
+              Total de {linhas.length} fração(ões) no mapa.
+            </span>
           </div>
 
           <Painel>

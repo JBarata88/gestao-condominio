@@ -143,11 +143,11 @@ export default async function PaginaMovimentos({
     <div className="mx-auto max-w-5xl">
       <CabecalhoPagina
         sobretitulo={`Exercício de ${ano}`}
-        titulo={admin ? "Movimentos" : "Conta corrente"}
+        titulo="Movimentos"
         descricao={
           admin
             ? "Banco e caixa em blocos separados, como nas folhas mensais. O saldo é calculado a partir dos movimentos, não guardado."
-            : "Movimentos associados à tua fração."
+            : "Todos os movimentos do exercício, em consulta. Só a administração pode lançar ou corrigir."
         }
       />
 
@@ -155,7 +155,7 @@ export default async function PaginaMovimentos({
         mes={mes}
         categoria={categoria}
         fracao={fracao}
-        mostrarFracao={admin}
+        mostrarFracao
         categorias={categorias
           .filter((c) => c.ativo)
           .map((c) => ({ id: c.id, rotulo: c.nome }))}

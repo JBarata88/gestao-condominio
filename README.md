@@ -10,24 +10,14 @@ A versão em uso aparece no canto inferior esquerdo da aplicação.
 
 ## O que faz
 
-- **Painel** com o valor em caixa, o valor no banco, o total disponível, o
-  movimento do mês e as frações com quotas em atraso.
-- **Movimentos** com saldo acumulado calculado, não guardado. Inserir uma linha
-  a meio já não parte os arrastamentos.
-- **Quotas** numa matriz de frações por meses, com o prazo de pagamento
-  configurável (dia 8 por omissão).
-- **Extratos bancários** importados de CSV, XLSX ou PDF, com sugestão
-  automática de categoria e fração e um ecrã de revisão antes de gravar.
-- **Relatórios**: mapa de origem e aplicação de fundos em Excel, na disposição
-  do ficheiro `MOAF` que já usavas.
-- **Recibos** em Word, nos três modelos existentes: quota, presença em
-  assembleia e documento de caixa.
-- **Definições** em seis áreas: Condomínio (dados, prazos, saldos de abertura e
-  abertura de exercício), Frações (condóminos e quem é da administração), Quotas
-  do ano (quota de cada fração por exercício), Contas (criar e atribuir os
-  acessos de login), Fornecedores e importação de Extratos bancários.
-- **Vários exercícios**: seletor de ano em todas as páginas, com histórico
-  consultável. Ver [`CHANGELOG.md`](CHANGELOG.md).
+- **Painel** com o valor em caixa, o valor no banco, o total disponível, o movimento do mês e as frações com quotas em atraso.
+- **Movimentos** com saldo acumulado calculado, não guardado. Inserir uma linha a meio já não parte os arrastamentos.
+- **Quotas** numa matriz de frações por meses, com o prazo de pagamento configurável (dia 8 por omissão).
+- **Extratos bancários** importados de CSV, XLSX ou PDF, com sugestão automática de categoria e fração e um ecrã de revisão antes de gravar.
+- **Relatórios**: mapa de origem e aplicação de fundos em Excel, na disposição do ficheiro `MOAF` que já usavas.
+- **Recibos** em Word, nos três modelos existentes: quota, presença em assembleia e documento de caixa.
+- **Definições** em seis áreas: Condomínio (dados, prazos, saldos de abertura e abertura de exercício), Frações (condóminos e quem é da administração), Quotas do ano (quota de cada fração por exercício), Contas (criar e atribuir os acessos de login), Fornecedores e importação de Extratos bancários.
+- **Vários exercícios**: seletor de ano em todas as páginas, com histórico consultável. Ver [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Uma correção face às folhas antigas
 
@@ -81,10 +71,8 @@ npm run dev
 ### Base de dados
 
 1. Cria um projecto em [supabase.com](https://supabase.com).
-
 2. Em **Project Settings > API Keys**, copia o *Project URL* e as chaves *anon*
    e *service_role* para o `.env.local`.
-
 3. Aplica o esquema. Pelo editor de SQL, que não exige instalar nada:
 
    Abre **SQL Editor**, cria uma query nova, cola o conteúdo de
@@ -101,16 +89,13 @@ npm run dev
    de segurança e os dados iniciais de estrutura. O ficheiro
    `migracao-completa.sql` é gerado a partir delas com
    `node scripts/gerar-sql-completo.mjs`, por isso não o edites à mão.
-
 4. Em **Authentication > Sign In / Providers**, desliga o registo público. As
    contas são criadas pela administração.
-
 5. Cria a **tua** conta em **Authentication > Users > Add user**. O primeiro
    utilizador do sistema fica automaticamente como administrador. As contas
    seguintes já podem ser criadas dentro da aplicação, em
    **Definições > Contas**, que também é onde se atribui a fração de cada
    condómino (usa a `SUPABASE_SERVICE_ROLE_KEY` do `.env.local`).
-
 6. Confirma que está tudo bem:
 
    ```bash
@@ -170,30 +155,24 @@ Os ficheiros ficam em `temporary screenshots/`, numerados e sem sobrescrever.
 
 1. Cria o repositório no GitHub e envia o código.
 2. Importa o repositório no Vercel.
-3. Em **Settings > Environment Variables**, define as três variáveis do
-   `.env.example`. A `SUPABASE_SERVICE_ROLE_KEY` é secreta e só é usada no
-   servidor.
-4. Em **Authentication > URL Configuration** no Supabase, acrescenta o domínio
-   do Vercel às *Redirect URLs*.
+3. Em **Settings > Environment Variables**, define as três variáveis do `.env.example`. A `SUPABASE_SERVICE_ROLE_KEY` é secreta e só é usada no servidor.
+4. Em **Authentication > URL Configuration** no Supabase, acrescenta o domínio do Vercel às *Redirect URLs*.
 
 ## Segurança
 
 O repositório é público, por isso:
 
-- A `SUPABASE_SERVICE_ROLE_KEY` nunca entra no código. Só em variáveis de
-  ambiente.
-- A chave anónima pode ser pública, mas só porque **todas** as tabelas têm Row
-  Level Security activa. É o Postgres que garante que um condómino não lê as
-  contas dos vizinhos, não o código das páginas.
-- `ASSETS/`, `dados-locais/` e qualquer `.xlsx`, `.xls` ou `.docx` estão no
-  `.gitignore`, porque contêm nomes, contribuinte e NIB reais.
+- A `SUPABASE_SERVICE_ROLE_KEY` nunca entra no código. Só em variáveis de ambiente.
+- A chave anónima pode ser pública, mas só porque **todas** as tabelas têm Row Level Security activa. É o Postgres que garante que quem não tem sessão não lê nada e que só a administração escreve, não o código das páginas.
+- `ASSETS/`, `dados-locais/` e qualquer `.xlsx`, `.xls` ou `.docx` estão no `.gitignore`, porque contêm nomes, contribuinte e NIB reais.
 
-Um condómino autenticado vê apenas a sua fração, os movimentos dela e os seus
-recibos, e o menu limita-se a Painel, Movimentos, Quotas e Relatórios. As
-Definições (incluindo a importação de extratos) e os dados dos fornecedores com
-IBAN são exclusivos da administração. O mapa de origem e aplicação de fundos em
-Relatórios é visível a qualquer condómino em modo de consulta, através de uma
-função agregada que não expõe movimentos individuais.
+Um condómino autenticado consulta as contas todas — movimentos de banco e
+caixa, mapa de quotas de todas as frações e o mapa de origem e aplicação de
+fundos — mas não lança nem corrige nada. O menu limita-se a Painel, Movimentos,
+Quotas e Relatórios. As Definições (incluindo a importação de extratos), os
+recibos, as contas de acesso dos vizinhos e os dados dos fornecedores com IBAN
+são exclusivos da administração. É o Postgres, pelas políticas de Row Level
+Security, que garante que a leitura é aberta e a escrita não.
 
 Ser administrador vem de `profiles.papel = 'admin'` (o primeiro utilizador) ou
 de a fração do condómino estar marcada como "da administração" em

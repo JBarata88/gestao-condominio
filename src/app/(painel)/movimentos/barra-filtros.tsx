@@ -21,7 +21,7 @@ export default function BarraFiltros({
   fracao: string | null;
   categorias: OpcaoFiltro[];
   fracoes: OpcaoFiltro[];
-  /** Um condómino só tem uma fração, por isso o filtro não lhe serve. */
+  /** Esconde o filtro de fração quando não há frações para escolher. */
   mostrarFracao: boolean;
 }) {
   const comFiltro = Boolean(categoria || fracao);

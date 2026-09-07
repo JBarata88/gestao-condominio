@@ -8,6 +8,26 @@ numeração segue o [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [0.8.0] — 2026-09-07
+
+### Alterado
+- **O condómino passa a consultar as contas todas.** Deixa de ver apenas a sua
+  fração: os **Movimentos** mostram o livro completo de banco e caixa com o
+  saldo real, o mapa de **Quotas** mostra todas as frações e o **Painel** passa
+  a incluir o bloco de quotas em atraso. Continua sem poder lançar nem corrigir
+  nada, e as **Definições** continuam reservadas à administração.
+  - Resolve o caso das contas de condómino recém-criadas, ainda sem fração
+    atribuída, que não viam movimento nenhum.
+  - A página de Movimentos ganha o filtro por fração também para o condómino.
+
+### Base de dados
+- Migração `0009_condomino_ve_tudo.sql`: as políticas de leitura de
+  `movimentos`, `fracoes` e `quotas_fracao` passam a valer para qualquer conta
+  autenticada. A escrita continua reservada à administração; fornecedores,
+  saldos, extratos bancários e regras de conciliação ficam como estavam.
+
+---
+
 ## [0.7.1] — 2026-09-06
 
 ### Alterado
@@ -184,6 +204,7 @@ mão.
   movimentos e devolvem totais, o que permite testá-las contra os números reais
   de 2026 sem ligação nenhuma.
 
+[0.8.0]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.8.0
 [0.7.1]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.7.1
 [0.7.0]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.7.0
 [0.6.0]: https://github.com/JBarata88/gestao-condominio/releases/tag/v0.6.0

@@ -10,7 +10,6 @@ import {
   definicao,
   limitesDoAno,
   paraCalculo,
-  perfilAtual,
   quotaEfetiva,
 } from "@/lib/dados";
 import { chaveMes, euros, MESES, somar } from "@/lib/formatos";
@@ -23,9 +22,6 @@ export default async function PaginaPainel({
 }: {
   searchParams: Promise<{ ano?: string }>;
 }) {
-  const perfil = await perfilAtual();
-  const admin = perfil?.admin === true;
-
   const { ano: anoParam } = await searchParams;
   const ano = await anoDeExercicio(anoParam);
   const diaLimite = await definicao<number>("dia_limite_quota", 8);
@@ -126,45 +122,43 @@ export default async function PaginaPainel({
         </div>
       </section>
 
-      {admin && (
-        <section aria-labelledby="quotas">
-          <h2
-            id="quotas"
-            className="mb-4 font-display text-xl font-semibold text-verdete-900"
-          >
-            Quotas
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <CartaoKpi
-              rotulo="Frações em atraso"
-              valor={`${emAtraso.length} de ${fracoes.filter((f) => f.ativo).length}`}
-              moeda={false}
-              tom={emAtraso.length > 0 ? "alerta" : "neutro"}
-              nota={`Prazo de pagamento: dia ${diaLimite} de cada mês`}
-            />
-            <CartaoKpi
-              rotulo="Valor por cobrar"
-              valor={porCobrar}
-              tom={porCobrar > 0 ? "alerta" : "neutro"}
-            />
-          </div>
+      <section aria-labelledby="quotas">
+        <h2
+          id="quotas"
+          className="mb-4 font-display text-xl font-semibold text-verdete-900"
+        >
+          Quotas
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <CartaoKpi
+            rotulo="Frações em atraso"
+            valor={`${emAtraso.length} de ${fracoes.filter((f) => f.ativo).length}`}
+            moeda={false}
+            tom={emAtraso.length > 0 ? "alerta" : "neutro"}
+            nota={`Prazo de pagamento: dia ${diaLimite} de cada mês`}
+          />
+          <CartaoKpi
+            rotulo="Valor por cobrar"
+            valor={porCobrar}
+            tom={porCobrar > 0 ? "alerta" : "neutro"}
+          />
+        </div>
 
-          {emAtraso.length > 0 && (
-            <ul className="mt-5 flex flex-wrap gap-2">
-              {emAtraso.map((l) => (
-                <li
-                  key={l.fracao.id}
-                  className="rounded-lg border border-ocre-200 bg-ocre-50 px-3 py-2 text-sm text-ocre-800"
-                >
-                  <span className="font-medium">Fração {l.fracao.letra}</span>
-                  <span className="text-ocre-700/80"> · {l.fracao.andar} · </span>
-                  <span className="tabular">{euros(l.totalEmFalta)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+        {emAtraso.length > 0 && (
+          <ul className="mt-5 flex flex-wrap gap-2">
+            {emAtraso.map((l) => (
+              <li
+                key={l.fracao.id}
+                className="rounded-lg border border-ocre-200 bg-ocre-50 px-3 py-2 text-sm text-ocre-800"
+              >
+                <span className="font-medium">Fração {l.fracao.letra}</span>
+                <span className="text-ocre-700/80"> · {l.fracao.andar} · </span>
+                <span className="tabular">{euros(l.totalEmFalta)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {movimentos.length === 0 && (
         <p className="mt-10 rounded-xl border border-pergaminho-200 bg-white p-6 leading-relaxed text-pergaminho-600">

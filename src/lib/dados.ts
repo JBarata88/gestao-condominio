@@ -331,8 +331,9 @@ export type MovimentoDetalhado = Movimento & {
 /**
  * Movimentos de um intervalo, com a categoria e a fração já resolvidas.
  *
- * As políticas de Row Level Security tratam da filtragem por utilizador: um
- * condómino recebe apenas as linhas da sua fração sem que este código o saiba.
+ * Qualquer autenticado lê todos os movimentos: as políticas de Row Level
+ * Security reservam a escrita à administração, mas a leitura é aberta para o
+ * condómino poder consultar as contas.
  */
 export const carregarMovimentos = cache(
   async (inicio: string, fim: string): Promise<MovimentoDetalhado[]> => {
