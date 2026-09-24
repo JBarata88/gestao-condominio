@@ -4,11 +4,14 @@ import FormularioAccao, { Campo } from "@/components/formulario-accao";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { Fornecedor } from "@/lib/tipos-bd";
 import { guardarFornecedor } from "../accoes";
+import { exigirAdminOuRedirecionar } from "../exigir-admin";
 import BotaoApagarFornecedor from "./botao-apagar";
 
 export const metadata: Metadata = { title: "Fornecedores · Definições" };
 
 export default async function PaginaDefinicoesFornecedores() {
+  await exigirAdminOuRedirecionar();
+
   const supabase = await clienteServidor();
   const { data: fornecedores } = await supabase
     .from("fornecedores")

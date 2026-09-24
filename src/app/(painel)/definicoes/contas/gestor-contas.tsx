@@ -16,7 +16,6 @@ export type FracaoOpcao = {
   id: string;
   letra: string;
   andar: string;
-  administracao: boolean;
 };
 
 export type ContaVista = {
@@ -59,7 +58,6 @@ function OpcoesFracao({ fracoes }: { fracoes: FracaoOpcao[] }) {
       {fracoes.map((f) => (
         <option key={f.id} value={f.id}>
           {f.letra} · {f.andar}
-          {f.administracao ? " (administração)" : ""}
         </option>
       ))}
     </>
@@ -191,9 +189,6 @@ function LinhaConta({
   >(apagarConta, null);
   const [aConfirmar, setAConfirmar] = useState(false);
 
-  const fracaoLigada = fracoes.find((f) => f.id === conta.fracaoId);
-  const adminPelaFracao = fracaoLigada?.administracao ?? false;
-
   return (
     <Painel>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -207,8 +202,6 @@ function LinhaConta({
           {conta.euProprio && <Etiqueta tom="neutro">a tua conta</Etiqueta>}
           {conta.papel === "admin" ? (
             <Etiqueta tom="positivo">administrador</Etiqueta>
-          ) : adminPelaFracao ? (
-            <Etiqueta tom="positivo">admin pela fração</Etiqueta>
           ) : (
             <Etiqueta tom="neutro">condómino</Etiqueta>
           )}
@@ -248,13 +241,6 @@ function LinhaConta({
             Acesso de administrador
           </label>
         </div>
-
-        {adminPelaFracao && conta.papel !== "admin" && (
-          <p className="text-sm text-pergaminho-500">
-            Esta conta já é administradora por a fração {fracaoLigada?.letra}{" "}
-            estar marcada como administração em Frações.
-          </p>
-        )}
 
         <div className="flex flex-wrap items-center gap-4">
           <BotaoSubmeter rotulo="Guardar" />

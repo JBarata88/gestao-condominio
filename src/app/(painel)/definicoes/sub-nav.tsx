@@ -3,23 +3,31 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const ABAS = [
+const ABAS_ADMIN = [
   { href: "/definicoes/condominio", rotulo: "Condomínio" },
   { href: "/definicoes/fracoes", rotulo: "Frações" },
   { href: "/definicoes/quotas", rotulo: "Quotas do ano" },
+  { href: "/definicoes/orcamento", rotulo: "Orçamento" },
   { href: "/definicoes/contas", rotulo: "Contas" },
   { href: "/definicoes/fornecedores", rotulo: "Fornecedores" },
   { href: "/definicoes/extratos", rotulo: "Extratos bancários" },
 ];
 
-/** Navegação secundária das Definições, entre as quatro áreas de configuração. */
-export default function SubNavDefinicoes() {
+const ABA_CONTA = { href: "/definicoes/conta", rotulo: "Conta" };
+
+/**
+ * Navegação secundária das Definições. Um condómino sem acesso de
+ * administrador só vê "Conta", para poder alterar a sua palavra-passe — as
+ * restantes áreas nem chegam a ser pedidas (ver exigirAdminOuRedirecionar).
+ */
+export default function SubNavDefinicoes({ admin }: { admin: boolean }) {
   const caminho = usePathname();
+  const abas = admin ? [...ABAS_ADMIN, ABA_CONTA] : [ABA_CONTA];
 
   return (
     <nav aria-label="Áreas das definições" className="border-b border-pergaminho-200">
       <ul className="-mb-px flex flex-wrap gap-1">
-        {ABAS.map((aba) => {
+        {abas.map((aba) => {
           const ativo = caminho.startsWith(aba.href);
           return (
             <li key={aba.href}>

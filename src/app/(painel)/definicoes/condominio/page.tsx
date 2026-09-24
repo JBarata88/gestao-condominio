@@ -4,34 +4,39 @@ import FormularioAccao, { Campo } from "@/components/formulario-accao";
 import {
   anoDeExercicio,
   carregarCondominio,
-  carregarSaldosIniciais,
   definicao,
   listarExercicios,
   temSaldosIniciais,
 } from "@/lib/dados";
 import { euros } from "@/lib/formatos";
-import {
-  abrirExercicio,
-  guardarCondominio,
-  guardarDefinicoes,
-  guardarSaldosIniciais,
-} from "../accoes";
+import { abrirExercicio, guardarCondominio, guardarDefinicoes } from "../accoes";
+import { exigirAdminOuRedirecionar } from "../exigir-admin";
+import BotaoAbrirExercicio from "./botao-abrir-exercicio";
 import BotaoApagarExercicio from "./botao-apagar-exercicio";
+import BotaoCriarExercicio from "./botao-criar-exercicio";
+import BotaoTornarActivo from "./botao-tornar-activo";
 
 export const metadata: Metadata = { title: "Condomínio · Definições" };
 
-export default async function PaginaDefinicoesCondominio() {
-  const ano = await anoDeExercicio();
+export default async function PaginaDefinicoesCondominio({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string }>;
+}) {
+  await exigirAdminOuRedirecionar();
 
-  const [condominio, saldos, saldosDefinidos, exercicios] = await Promise.all([
+  const { ano: anoParam } = await searchParams;
+  const ano = await anoDeExercicio(anoParam);
+
+  const [condominio, saldosDefinidos, exercicios] = await Promise.all([
     carregarCondominio(),
-    carregarSaldosIniciais(ano),
     temSaldosIniciais(ano),
     listarExercicios(),
   ]);
 
-  // O campo "Ano do exercício" mexe no valor por omissão guardado, não no ano
-  // que está a ser consultado através do seletor no topo da página.
+  // O exercício activo (definicoes.ano_exercicio) muda-se na tabela de
+  // Exercícios, com "Tornar activo" — não é o ano que está a ser consultado
+  // através do seletor no topo da página.
   const anoPorOmissao = await definicao<number>(
     "ano_exercicio",
     new Date().getFullYear(),
@@ -42,6 +47,9 @@ export default async function PaginaDefinicoesCondominio() {
     "Póvoa de Santa Iria",
   );
   const valorPresenca = await definicao<number>("valor_presenca_assembleia", 5);
+
+  const proximoAno =
+    Math.max(anoPorOmissao, ...exercicios.map((e) => e.ano)) + 1;
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,14 +111,6 @@ export default async function PaginaDefinicoesCondominio() {
               dica="As quotas devem estar pagas até este dia de cada mês."
             />
             <Campo
-              nome="ano_exercicio"
-              etiqueta="Ano do exercício por omissão"
-              tipo="number"
-              valor={anoPorOmissao}
-              obrigatorio
-              dica="O ano que aparece a quem entra sem escolher outro no seletor."
-            />
-            <Campo
               nome="localidade_recibos"
               etiqueta="Localidade nos recibos"
               valor={localidade}
@@ -125,19 +125,30 @@ export default async function PaginaDefinicoesCondominio() {
         </FormularioAccao>
 
         <div className="mt-8 border-t border-pergaminho-200 pt-6">
-          <h3 className="font-display text-base font-semibold text-verdete-900">
-            Exercícios
-          </h3>
-          <p className="mt-1 text-sm text-pergaminho-600">
-            Todos os anos com dados, mais o exercício activo — o que está em
-            &quot;Ano do exercício por omissão&quot;. Um exercício só pode ser
-            eliminado se não tiver movimentos e não for o activo. Eliminar apaga
-            os saldos de abertura e as quotas desse ano; os movimentos nunca são
-            apagados aqui.
-          </p>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h3 className="font-display text-base font-semibold text-verdete-900">
+                Exercícios
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm text-pergaminho-600">
+                Todos os anos com dados, mais o exercício activo. O ano
+                <span className="text-ocre-600"> activo</span> é o que toda a
+                gente vê por omissão; um ano criado a seguir a esse, ainda por
+                activar, aparece como{" "}
+                <span className="text-verdete-600">futuro</span>; todos os
+                outros ficam
+                <span className="text-pergaminho-500"> inactivos</span>. Um
+                exercício sem saldos de abertura só se pode abrir; um
+                exercício só se pode eliminar se não tiver movimentos e não
+                for o activo. Eliminar apaga os saldos de abertura e as
+                quotas desse ano; os movimentos nunca são apagados aqui.
+              </p>
+            </div>
+            <BotaoCriarExercicio anoSugerido={proximoAno} />
+          </div>
 
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[30rem] border-collapse text-sm">
+            <table className="w-full min-w-[34rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-pergaminho-200 text-left">
                   <th className="px-3 py-2 font-medium text-verdete-800">Ano</th>
@@ -159,10 +170,21 @@ export default async function PaginaDefinicoesCondominio() {
                   </tr>
                 ) : (
                   exercicios.map((e) => {
-                    const bloqueado = e.ativo || e.movimentos > 0;
-                    const motivo = e.ativo
+                    const estado: "activo" | "futuro" | "inactivo" = e.ativo
+                      ? "activo"
+                      : e.ano > anoPorOmissao
+                        ? "futuro"
+                        : "inactivo";
+                    const ESTADO_COR: Record<typeof estado, string> = {
+                      activo: "text-ocre-600",
+                      futuro: "text-verdete-600",
+                      inactivo: "text-pergaminho-400",
+                    };
+                    const bloqueadoEliminar = e.ativo || e.movimentos > 0;
+                    const motivoEliminar = e.ativo
                       ? "Exercício activo"
                       : `${e.movimentos} movimento(s)`;
+
                     return (
                       <tr
                         key={e.ano}
@@ -173,12 +195,12 @@ export default async function PaginaDefinicoesCondominio() {
                           className="px-3 py-2.5 text-left font-medium whitespace-nowrap text-verdete-900"
                         >
                           {e.ano}
-                          {e.ativo && (
-                            <span className="ml-2 text-xs font-normal text-ocre-600">
-                              activo
-                            </span>
-                          )}
-                          {!e.temSaldos && (
+                          <span
+                            className={`ml-2 text-xs font-normal ${ESTADO_COR[estado]}`}
+                          >
+                            {estado}
+                          </span>
+                          {estado !== "futuro" && !e.temSaldos && (
                             <span className="ml-2 text-xs font-normal text-pergaminho-400">
                               sem abertura
                             </span>
@@ -191,11 +213,20 @@ export default async function PaginaDefinicoesCondominio() {
                           {e.movimentos}
                         </td>
                         <td className="px-3 py-2.5 text-right">
-                          <BotaoApagarExercicio
-                            ano={e.ano}
-                            bloqueado={bloqueado}
-                            motivo={bloqueado ? motivo : undefined}
-                          />
+                          {!e.temSaldos ? (
+                            <BotaoAbrirExercicio ano={e.ano} />
+                          ) : (
+                            <span className="flex flex-wrap items-center justify-end gap-3">
+                              {!e.ativo && <BotaoTornarActivo ano={e.ano} />}
+                              <BotaoApagarExercicio
+                                ano={e.ano}
+                                bloqueado={bloqueadoEliminar}
+                                motivo={
+                                  bloqueadoEliminar ? motivoEliminar : undefined
+                                }
+                              />
+                            </span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -210,7 +241,7 @@ export default async function PaginaDefinicoesCondominio() {
       {!saldosDefinidos && (
         <Painel
           titulo={`Abrir o exercício de ${ano}`}
-          descricao={`Ainda não há saldos de abertura para ${ano}. Podes transportá-los do fecho de ${ano - 1}: a app calcula os saldos de caixa e banco no fim desse ano e usa-os como abertura deste, transporta as quotas em vigor e passa a considerar ${ano} o exercício em curso. Podes ajustar tudo depois.`}
+          descricao={`Ainda não há saldos de abertura para ${ano}. A app calcula os saldos de caixa e banco no fim de ${ano - 1} e usa-os como abertura deste ano, e transporta as quotas em vigor. Fica marcado como "futuro" até escolheres "Tornar activo" na tabela acima.`}
         >
           <FormularioAccao
             accao={abrirExercicio}
@@ -220,33 +251,6 @@ export default async function PaginaDefinicoesCondominio() {
           </FormularioAccao>
         </Painel>
       )}
-
-      <Painel
-        titulo="Saldos de abertura"
-        descricao={`Correspondem à secção "Administração anterior" do mapa, para ${ano}.`}
-      >
-        <FormularioAccao accao={guardarSaldosIniciais}>
-          <input type="hidden" name="ano" value={ano} />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Campo nome="caixa" etiqueta="Caixa" valor={saldos.caixa} />
-            <Campo
-              nome="deposito_ordem"
-              etiqueta="Depósitos à ordem"
-              valor={saldos.depositoOrdem}
-            />
-            <Campo
-              nome="deposito_prazo"
-              etiqueta="Depósitos a prazo"
-              valor={saldos.depositoPrazo}
-            />
-            <Campo
-              nome="conta_poupanca"
-              etiqueta="Conta poupança"
-              valor={saldos.contaPoupanca}
-            />
-          </div>
-        </FormularioAccao>
-      </Painel>
     </div>
   );
 }

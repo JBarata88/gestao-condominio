@@ -134,3 +134,19 @@ h3 {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* ==========================================================================
+   Impressão: folha A4 vertical, com as cores de estado a sair no papel
+   (por omissão a maioria dos browsers não imprime fundos/cores).
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

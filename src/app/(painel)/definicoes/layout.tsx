@@ -16,17 +16,21 @@ export default async function LayoutDefinicoes({
   children: React.ReactNode;
 }) {
   const perfil = await perfilAtual();
-  if (!perfil?.admin) redirect("/");
+  if (!perfil) redirect("/entrar");
 
   return (
     <div className="mx-auto max-w-4xl">
       <CabecalhoPagina
-        sobretitulo="Administração"
+        sobretitulo={perfil.admin ? "Administração" : "A tua conta"}
         titulo="Definições"
-        descricao="Dados do condomínio, prazos, frações, fornecedores e importação de extratos bancários."
+        descricao={
+          perfil.admin
+            ? "Dados do condomínio, prazos, frações, fornecedores e importação de extratos bancários."
+            : "Só a administração acede às restantes áreas. Aqui podes alterar a tua palavra-passe."
+        }
       />
 
-      <SubNavDefinicoes />
+      <SubNavDefinicoes admin={perfil.admin} />
 
       <div className="mt-8">{children}</div>
     </div>

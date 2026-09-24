@@ -33,6 +33,7 @@ const ITENS_CONDOMINO: ItemNavegacao[] = [
   { href: "/movimentos", rotulo: "Movimentos" },
   { href: "/quotas", rotulo: "Quotas" },
   { href: "/relatorios", rotulo: "Relatórios" },
+  { href: "/definicoes", rotulo: "Definições" },
 ];
 
 export default async function LayoutPainel({
@@ -52,14 +53,14 @@ export default async function LayoutPainel({
   ]);
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_1fr] print:block">
       <Navegacao
         itens={admin ? ITENS_ADMIN : ITENS_CONDOMINO}
         nome={perfil.nome ?? "Utilizador"}
         papel={admin ? "Administração" : "Condómino"}
       />
-      <main className="min-w-0 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <div className="mb-8 flex justify-end border-b border-pergaminho-200 pb-4">
+      <main className="min-w-0 px-5 py-8 sm:px-8 lg:px-10 lg:py-10 print:p-0">
+        <div className="mb-8 flex justify-end border-b border-pergaminho-200 pb-4 print:hidden">
           <Suspense fallback={null}>
             <SeletorAno anos={anos} anoActivo={anoActivo} />
           </Suspense>

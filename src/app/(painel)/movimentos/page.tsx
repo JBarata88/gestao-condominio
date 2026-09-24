@@ -6,6 +6,7 @@ import {
   carregarCategorias,
   carregarFracoes,
   carregarMovimentos,
+  carregarReforcosDoAno,
   carregarSaldosIniciais,
   limitesDoAno,
   perfilAtual,
@@ -40,11 +41,12 @@ export default async function PaginaMovimentos({
       ? mesNumero
       : null;
 
-  const [movimentos, abertura, categorias, fracoes] = await Promise.all([
+  const [movimentos, abertura, categorias, fracoes, reforcos] = await Promise.all([
     carregarMovimentos(inicioAno, fimAno),
     carregarSaldosIniciais(ano),
     carregarCategorias(),
     carregarFracoes(),
+    carregarReforcosDoAno(ano),
   ]);
 
   // Só se aceitam identificadores que existam, para um endereço adulterado
@@ -138,6 +140,11 @@ export default async function PaginaMovimentos({
   const fracoesAtivas = fracoes
     .filter((f) => f.ativo)
     .map((f) => ({ id: f.id, letra: f.letra, andar: f.andar }));
+  const reforcosEscolha = reforcos.map((r) => ({
+    id: r.id,
+    descricao: r.descricao,
+    categoriaId: r.categoria_id,
+  }));
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -192,6 +199,7 @@ export default async function PaginaMovimentos({
             filtrado={filtroDeConteudo}
             categorias={categoriasAtivas}
             fracoes={fracoesAtivas}
+            reforcos={reforcosEscolha}
             ano={ano}
           />
 
@@ -206,6 +214,7 @@ export default async function PaginaMovimentos({
             filtrado={filtroDeConteudo}
             categorias={categoriasAtivas}
             fracoes={fracoesAtivas}
+            reforcos={reforcosEscolha}
             ano={ano}
             // A caixa não tem extrato de onde vir, por isso é aqui que os
             // movimentos em numerário são lançados.
@@ -216,6 +225,7 @@ export default async function PaginaMovimentos({
                   ano={ano}
                   categorias={categoriasAtivas}
                   fracoes={fracoesAtivas}
+                  reforcos={reforcosEscolha}
                 />
               ) : undefined
             }

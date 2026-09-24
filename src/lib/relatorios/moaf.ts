@@ -42,28 +42,69 @@ export async function gerarMoaf({
   livro.created = new Date();
 
   const folha = livro.addWorksheet(`MOAF_${ano}`, {
-    pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true },
+    properties: { defaultRowHeight: 12.75 },
+    pageSetup: {
+      paperSize: 9,
+      orientation: "portrait",
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 1,
+      scale: 89,
+      margins: {
+        left: 0.5511811023622047,
+        right: 0.35433070866141736,
+        top: 0.5905511811023623,
+        bottom: 0.7874015748031497,
+        header: 0.11811023622047245,
+        footer: 0.11811023622047245,
+      },
+      showRowColHeaders: false,
+      showGridLines: false,
+      horizontalCentered: true,
+      verticalCentered: true,
+    },
   });
 
+  // Larguras de coluna iguais às de ASSETS/MOAF202601.xlsx: A-E ficam na
+  // largura por omissão (o texto das etiquetas "transborda" para as colunas
+  // vazias ao lado, tal como no original) e só F-H têm largura própria.
   folha.columns = [
-    { width: 4 }, // A
-    { width: 30 }, // B
-    { width: 12 }, // C
-    { width: 12 }, // D
-    { width: 4 }, // E
-    { width: 4 }, // F
-    { width: 14 }, // G
+    {}, // A
+    {}, // B
+    {}, // C
+    {}, // D
+    {}, // E
+    { width: 11.28515625 }, // F
+    { width: 10 }, // G
+    { width: 11.28515625 }, // H
   ];
+  folha.getRow(6).height = 13.5;
 
   const MOEDA = "#,##0.00";
+  const TIPO_LETRA = "MS Sans Serif";
+  const TAMANHO_LETRA = 10;
 
   const texto = (celula: string, valor: string, opcoes: {
     negrito?: boolean;
+    italico?: boolean;
     tamanho?: number;
+    bordaEsquerda?: boolean;
+    centroContinuo?: boolean;
   } = {}) => {
     const c = folha.getCell(celula);
     c.value = valor;
-    c.font = { bold: opcoes.negrito ?? false, size: opcoes.tamanho ?? 11 };
+    c.font = {
+      bold: opcoes.negrito ?? false,
+      italic: opcoes.italico ?? false,
+      size: opcoes.tamanho ?? TAMANHO_LETRA,
+      name: TIPO_LETRA,
+    };
+    if (opcoes.bordaEsquerda) {
+      c.border = { left: { style: "medium" } };
+    }
+    if (opcoes.centroContinuo) {
+      c.alignment = { horizontal: "centerContinuous" };
+    }
     return c;
   };
 
@@ -71,29 +112,32 @@ export async function gerarMoaf({
     const c = folha.getCell(celula);
     c.value = v;
     c.numFmt = MOEDA;
-    c.font = { bold: negrito };
+    c.font = { bold: negrito, size: TAMANHO_LETRA, name: TIPO_LETRA };
     c.alignment = { horizontal: "right" };
     return c;
   };
 
   // --- Cabeçalho -----------------------------------------------------------
-  texto("A1", condominio.nome, { negrito: true });
-  texto("A2", condominio.morada);
-  texto("A3", `${condominio.codigoPostal} ${condominio.localidade}`);
-  texto("A4", `CONTRIBUINTE:${condominio.nif}`);
-
-  texto("C6", "MAPA DE ORIGEM E APLICAÇÃO DE FUNDOS", {
+  texto("A1", condominio.nome, { negrito: true, italico: true });
+  texto("A2", condominio.morada, { negrito: true, italico: true });
+  texto("A3", `${condominio.codigoPostal} ${condominio.localidade}`, {
     negrito: true,
-    tamanho: 12,
+    italico: true,
+  });
+  texto("A4", `CONTRIBUINTE:${condominio.nif}`, {
+    negrito: true,
+    italico: true,
   });
 
-  texto("A8", "  EXERCICIO DE :");
-  texto("C8", `${dataCurta(inicio)} a ${dataCurta(fim)}`);
-  texto("G8", "EUROS", { negrito: true });
+  texto("C6", "MAPA DE ORIGEM E APLICAÇÃO DE FUNDOS", { negrito: true });
+
+  texto("A8", "  EXERCICIO DE :", { negrito: true, bordaEsquerda: true });
+  texto("C8", `${dataCurta(inicio)} a ${dataCurta(fim)}`, { negrito: true });
+  texto("G8", "EUROS", { negrito: true, centroContinuo: true });
 
   // --- Origem de fundos ----------------------------------------------------
-  texto("A11", "ORIGEM DE FUNDOS", { negrito: true });
-  texto("A13", "   A- Administração anterior");
+  texto("A11", "ORIGEM DE FUNDOS", { negrito: true, bordaEsquerda: true });
+  texto("A13", "   A- Administração anterior", { bordaEsquerda: true });
 
   texto("B14", "Caixa");
   valor("G14", mapa.origem.anterior.caixa);
@@ -107,7 +151,7 @@ export async function gerarMoaf({
   texto("D19", "SUB-TOTAL", { negrito: true });
   valor("G19", mapa.origem.anterior.total, true);
 
-  texto("A22", "  B- Administração actual");
+  texto("A22", "  B- Administração actual", { bordaEsquerda: true });
 
   // As receitas começam na linha 23, como no ficheiro original.
   let linha = 23;
@@ -131,8 +175,11 @@ export async function gerarMoaf({
 
   // --- Aplicação de fundos -------------------------------------------------
   const tituloAplicacao = totalOrigem + 3;
-  texto(`A${tituloAplicacao}`, "APLICAÇÃO DE FUNDOS", { negrito: true });
-  texto(`A${tituloAplicacao + 2}`, "   A-Despesas");
+  texto(`A${tituloAplicacao}`, "APLICAÇÃO DE FUNDOS", {
+    negrito: true,
+    bordaEsquerda: true,
+  });
+  texto(`A${tituloAplicacao + 2}`, "   A-Despesas", { bordaEsquerda: true });
 
   linha = tituloAplicacao + 3;
   for (const item of mapa.aplicacao.despesas.linhas) {
@@ -146,7 +193,9 @@ export async function gerarMoaf({
   valor(`G${subtotalDespesas}`, mapa.aplicacao.despesas.subtotal, true);
 
   const tituloDisponibilidades = subtotalDespesas + 3;
-  texto(`A${tituloDisponibilidades}`, "    B-Disponibilidades");
+  texto(`A${tituloDisponibilidades}`, "    B-Disponibilidades", {
+    bordaEsquerda: true,
+  });
 
   const d = mapa.aplicacao.disponibilidades;
   texto(`B${tituloDisponibilidades + 1}`, "Caixa");
@@ -167,17 +216,28 @@ export async function gerarMoaf({
   valor(`G${totalAplicacao}`, mapa.aplicacao.total, true);
 
   const variacao = totalAplicacao + 2;
-  texto(`A${variacao}`, "     C-Variação das disponibilidades ");
-  valor(`G${variacao}`, mapa.variacao);
+  texto(`A${variacao}`, "     C-Variação das disponibilidades ", {
+    bordaEsquerda: true,
+  });
+  valor(`G${variacao}`, mapa.variacao, true);
 
   const controlo = variacao + 2;
-  texto(`D${controlo}`, "controlo");
-  const celulaControlo = valor(`G${controlo}`, mapa.controlo);
+  texto(`D${controlo}`, "controlo", { negrito: true });
+  const celulaControlo = valor(`G${controlo}`, mapa.controlo, true);
   // Se alguma vez deixar de fechar, tem de saltar à vista em vez de passar
   // despercebido como acontecia na folha.
   if (mapa.controlo !== 0) {
-    celulaControlo.font = { bold: true, color: { argb: "FFA63A2B" } };
+    celulaControlo.font = {
+      bold: true,
+      size: TAMANHO_LETRA,
+      name: TIPO_LETRA,
+      color: { argb: "FFA63A2B" },
+    };
   }
+
+  // Igual à área de impressão de ASSETS/MOAF202601.xlsx: da linha do
+  // cabeçalho até à linha de controlo, incluindo a coluna em branco H.
+  folha.pageSetup.printArea = `A1:H${controlo}`;
 
   const buffer = await livro.xlsx.writeBuffer();
   return Buffer.from(buffer);

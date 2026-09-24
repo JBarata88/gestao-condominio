@@ -17,6 +17,7 @@ export type CategoriaEscolha = {
   natureza: "receita" | "despesa" | "transferencia";
 };
 export type FracaoEscolha = { id: string; letra: string; andar: string };
+export type ReforcoEscolha = { id: string; descricao: string; categoriaId: string };
 
 const CLASSE_CAMPO =
   "w-full rounded-lg border border-pergaminho-300 bg-white px-3 py-2 text-sm text-verdete-950 transition-[border-color] duration-150 hover:border-pergaminho-400 focus:border-verdete-500 focus:outline-none";
@@ -48,6 +49,7 @@ export default function LinhaMovimento({
   colunas,
   categorias,
   fracoes,
+  reforcos = [],
   ano,
 }: {
   l: LinhaConta;
@@ -57,6 +59,7 @@ export default function LinhaMovimento({
   colunas: number;
   categorias: CategoriaEscolha[];
   fracoes: FracaoEscolha[];
+  reforcos?: ReforcoEscolha[];
   ano: number;
 }) {
   const [aEditar, setAEditar] = useState(false);
@@ -80,6 +83,9 @@ export default function LinhaMovimento({
   const eQuota = categoriaEscolhida?.nome === "Quotizações";
   const compativeis = categorias.filter(
     (c) => c.natureza === sentido || c.natureza === "transferencia",
+  );
+  const reforcosCompativeis = reforcos.filter(
+    (r) => r.categoriaId === categoriaId,
   );
 
   const valorAtual = l.despesa > 0 ? l.despesa : l.receita;
@@ -305,6 +311,56 @@ export default function LinhaMovimento({
                     valor={mesQuota}
                     aoMudar={setMesQuota}
                   />
+                </div>
+              </>
+            )}
+
+            {/* O reforço só aparece quando a categoria escolhida tem pelo
+                menos um reforço criado em Definições > Quotas do ano. */}
+            {!eQuota && sentido === "receita" && reforcosCompativeis.length > 0 && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor={`fracao-reforco-${l.id}`}
+                    className="text-xs font-medium tracking-wide text-pergaminho-600 uppercase"
+                  >
+                    Fração
+                  </label>
+                  <select
+                    id={`fracao-reforco-${l.id}`}
+                    name="fracao_id"
+                    defaultValue={l.fracao_id ?? ""}
+                    className={CLASSE_CAMPO}
+                  >
+                    <option value="">Sem fração</option>
+                    {fracoes.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.letra} · {f.andar}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor={`reforco-${l.id}`}
+                    className="text-xs font-medium tracking-wide text-pergaminho-600 uppercase"
+                  >
+                    Reforço
+                  </label>
+                  <select
+                    id={`reforco-${l.id}`}
+                    name="reforco_id"
+                    defaultValue={l.reforco_id ?? ""}
+                    className={CLASSE_CAMPO}
+                  >
+                    <option value="">Nenhum</option>
+                    {reforcosCompativeis.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.descricao}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </>
             )}

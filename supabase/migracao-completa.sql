@@ -867,4 +867,219 @@ drop policy if exists "quotas visiveis" on quotas_fracao;
 create policy "quotas visiveis" on quotas_fracao
   for select to authenticated using (true);
 
+-- ---------------------------------------------------------------------------
+-- 0010_reforcos.sql
+-- ---------------------------------------------------------------------------
+
+-- ============================================================================
+-- Reforços extraordinários, com a mesma lógica das quotas
+--
+-- Além da quota mensal, o condomínio por vezes pede um reforço pontual a cada
+-- fração — por exemplo, 200€ por fração para obras, como aconteceu em 2025.
+-- Ao contrário da quota, não é mensal nem recorrente: é um valor único, com um
+-- prazo de pagamento próprio, e pode haver vários no mesmo ano (um para obras,
+-- outro para o elevador, etc.).
+--
+-- Cada reforço aponta para uma categoria de receita — normalmente "Reforço
+-- Fundos Obras", que já existe — para que o valor entre no mapa de origem e
+-- aplicação de fundos como sempre entrou. O que distingue um reforço de outro,
+-- quando os dois usam a mesma categoria, é a coluna movimentos.reforco_id.
+--
+-- Como o exemplo de 2025 já tinha pagamentos lançados antes de este conceito
+-- existir, a criação de um reforço associa automaticamente (código, não aqui)
+-- os movimentos antigos da mesma categoria e ano que ainda não pertencem a
+-- nenhum reforço.
+--
+-- As instruções são idempotentes: aplicar esta migração duas vezes não dá erro.
+-- ============================================================================
+
+create table if not exists reforcos (
+  id            uuid primary key default gen_random_uuid(),
+  ano           smallint not null check (ano between 1900 and 2200),
+  descricao     text not null,
+  valor_fracao  numeric(10, 2) not null check (valor_fracao > 0),
+  data_limite   date not null,
+  categoria_id  uuid not null references categorias (id) on delete restrict,
+  criado_em     timestamptz not null default now(),
+  criado_por    uuid references auth.users (id) on delete set null
+);
+
+comment on table reforcos is
+  'Reforço extraordinário pedido a cada fração, com valor e prazo próprios. '
+  'Vários podem existir no mesmo ano.';
+
+alter table reforcos enable row level security;
+
+drop policy if exists "reforcos visiveis" on reforcos;
+create policy "reforcos visiveis" on reforcos
+  for select to authenticated using (true);
+
+drop policy if exists "administrador gere reforcos" on reforcos;
+create policy "administrador gere reforcos" on reforcos
+  for all to authenticated using (e_admin()) with check (e_admin());
+
+-- ---------------------------------------------------------------------------
+-- Liga um movimento a um reforço concreto, tal como quota_mes liga um
+-- movimento a um mês de quota. Sem isto, dois reforços com a mesma categoria
+-- no mesmo ano não se conseguiriam distinguir.
+-- ---------------------------------------------------------------------------
+alter table movimentos add column if not exists reforco_id uuid references reforcos (id) on delete set null;
+
+alter table movimentos drop constraint if exists reforco_exige_fracao;
+alter table movimentos add constraint reforco_exige_fracao
+  check (reforco_id is null or fracao_id is not null);
+
+-- ---------------------------------------------------------------------------
+-- 0011_administradores_condominio.sql
+-- ---------------------------------------------------------------------------
+
+-- ============================================================================
+-- Administração do condomínio associada ao exercício, não à conta
+--
+-- Até aqui, marcar uma fração como "da administração" dava-lhe acesso de
+-- administrador na aplicação inteira (ver e_admin() em 0007). Isso confundia
+-- dois papéis diferentes: quem é o administrador do condomínio num dado ano
+-- (um cargo que roda entre condóminos, ano a ano, como em qualquer prédio) e
+-- quem tem acesso de escrita à aplicação (uma questão de conta, decidida em
+-- Definições > Contas).
+--
+-- Esta migração separa os dois. A partir daqui:
+--   - O acesso de administrador da aplicação depende só de profiles.papel.
+--   - A administração do condomínio passa a ser uma lista de frações por ano,
+--     só para mostrar quem geria o condomínio nesse exercício — em Painel,
+--     Quotas e Relatórios. Não dá nenhum acesso extra.
+--
+-- As frações marcadas como administração hoje são transportadas para o
+-- exercício activo, para não se perder a informação.
+--
+-- As instruções são idempotentes: aplicar esta migração duas vezes não dá erro.
+-- ============================================================================
+
+create table if not exists administradores_condominio (
+  fracao_id  uuid not null references fracoes (id) on delete cascade,
+  ano        smallint not null check (ano between 1900 and 2200),
+  criado_em  timestamptz not null default now(),
+  primary key (fracao_id, ano)
+);
+
+comment on table administradores_condominio is
+  'Frações que administraram o condomínio em cada ano. Puramente informativo: '
+  'não concede acesso nenhum na aplicação (ver e_admin()).';
+
+alter table administradores_condominio enable row level security;
+
+drop policy if exists "administradores do condominio visiveis" on administradores_condominio;
+create policy "administradores do condominio visiveis" on administradores_condominio
+  for select to authenticated using (true);
+
+drop policy if exists "administrador gere administradores do condominio" on administradores_condominio;
+create policy "administrador gere administradores do condominio" on administradores_condominio
+  for all to authenticated using (e_admin()) with check (e_admin());
+
+-- ---------------------------------------------------------------------------
+-- Transporta as frações já marcadas como administração para o exercício
+-- activo, antes de a coluna desaparecer. Condicional a a coluna ainda existir,
+-- senão correr esta migração uma segunda vez rebentava aqui.
+-- ---------------------------------------------------------------------------
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'fracoes' and column_name = 'administracao'
+  ) then
+    insert into administradores_condominio (fracao_id, ano)
+    select
+      f.id,
+      coalesce(
+        (select (d.valor #>> '{}')::int from definicoes d where d.chave = 'ano_exercicio'),
+        extract(year from now())::int
+      )
+    from fracoes f
+    where f.administracao = true
+    on conflict do nothing;
+  end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- e_admin() deixa de olhar para fracoes.administracao: o acesso de
+-- administrador passa a depender só de profiles.papel.
+-- ---------------------------------------------------------------------------
+create or replace function e_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (select p.papel = 'admin' from profiles p where p.id = auth.uid()),
+    false
+  );
+$$;
+
+alter table fracoes drop column if exists administracao;
+
+-- ---------------------------------------------------------------------------
+-- 0012_orcamento.sql
+-- ---------------------------------------------------------------------------
+
+-- ============================================================================
+-- Orçamento aprovado em assembleia, por ano
+--
+-- Cada exercício pode ter um orçamento aprovado em assembleia: um valor
+-- previsto por categoria (a mesma lista de categorias dos movimentos), mais
+-- as disponibilidades previstas no fim do ano (caixa, banco, etc.). Serve
+-- para o relatório "Orçamento vs Realizado", que compara isto com os valores
+-- reais do exercício.
+--
+-- A administração anterior (saldos de abertura) não tem tabela própria aqui:
+-- o valor previsto é sempre igual ao real, porque já é conhecido quando o
+-- orçamento é escrito — reutiliza-se saldos_iniciais.
+--
+-- As instruções são idempotentes: aplicar esta migração duas vezes não dá erro.
+-- ============================================================================
+
+create table if not exists orcamento_categorias (
+  categoria_id  uuid not null references categorias (id) on delete cascade,
+  ano           smallint not null check (ano between 1900 and 2200),
+  valor         numeric(10, 2) not null default 0 check (valor >= 0),
+  atualizado_em timestamptz not null default now(),
+  primary key (categoria_id, ano)
+);
+
+comment on table orcamento_categorias is
+  'Valor previsto por categoria, no orçamento aprovado em assembleia para o ano.';
+
+alter table orcamento_categorias enable row level security;
+
+drop policy if exists "orcamento de categorias visivel" on orcamento_categorias;
+create policy "orcamento de categorias visivel" on orcamento_categorias
+  for select to authenticated using (true);
+
+drop policy if exists "administrador gere orcamento de categorias" on orcamento_categorias;
+create policy "administrador gere orcamento de categorias" on orcamento_categorias
+  for all to authenticated using (e_admin()) with check (e_admin());
+
+create table if not exists orcamento_disponibilidades (
+  ano            smallint primary key check (ano between 1900 and 2200),
+  caixa          numeric(10, 2) not null default 0 check (caixa >= 0),
+  deposito_ordem numeric(10, 2) not null default 0 check (deposito_ordem >= 0),
+  deposito_prazo numeric(10, 2) not null default 0 check (deposito_prazo >= 0),
+  conta_poupanca numeric(10, 2) not null default 0 check (conta_poupanca >= 0),
+  atualizado_em  timestamptz not null default now()
+);
+
+comment on table orcamento_disponibilidades is
+  'Disponibilidades previstas no fim do ano, no orçamento aprovado em assembleia.';
+
+alter table orcamento_disponibilidades enable row level security;
+
+drop policy if exists "orcamento de disponibilidades visivel" on orcamento_disponibilidades;
+create policy "orcamento de disponibilidades visivel" on orcamento_disponibilidades
+  for select to authenticated using (true);
+
+drop policy if exists "administrador gere orcamento de disponibilidades" on orcamento_disponibilidades;
+create policy "administrador gere orcamento de disponibilidades" on orcamento_disponibilidades
+  for all to authenticated using (e_admin()) with check (e_admin());
+
 commit;

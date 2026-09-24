@@ -87,6 +87,28 @@ function lerIntervaloQuota(
   };
 }
 
+/**
+ * Lê o reforço a que este pagamento pertence, quando indicado.
+ *
+ * Ao contrário do mês de quota, isto não é uma anotação: é o que faz o
+ * pagamento contar na tabela de reforços em Quotas, sobretudo quando há mais
+ * do que um reforço na mesma categoria no mesmo ano.
+ */
+function lerReforco(
+  dados: FormData,
+  fracaoId: string | null,
+): { ok: true; reforcoId: string | null } | { ok: false; mensagem: string } {
+  const reforcoId = texto(dados, "reforco_id");
+  if (!reforcoId) return { ok: true, reforcoId: null };
+  if (!fracaoId) {
+    return {
+      ok: false,
+      mensagem: "Escolheste um reforço mas não indicaste a fração.",
+    };
+  }
+  return { ok: true, reforcoId };
+}
+
 /** Lança um movimento à mão, para o que não vem de um extrato bancário. */
 export async function adicionarMovimento(
   _anterior: Resultado | null,
@@ -123,6 +145,8 @@ export async function adicionarMovimento(
     const fracaoId = texto(dados, "fracao_id");
     const intervalo = lerIntervaloQuota(dados, fracaoId);
     if (!intervalo.ok) return { ok: false, mensagem: intervalo.mensagem };
+    const reforco = lerReforco(dados, fracaoId);
+    if (!reforco.ok) return { ok: false, mensagem: reforco.mensagem };
 
     const supabase = await clienteServidor();
     const { error } = await supabase.from("movimentos").insert({
@@ -135,6 +159,7 @@ export async function adicionarMovimento(
       fracao_id: fracaoId,
       quota_mes: intervalo.quotaMes,
       quota_mes_fim: intervalo.quotaMesFim,
+      reforco_id: reforco.reforcoId,
       criado_por: perfil.id,
     });
 
@@ -196,6 +221,8 @@ export async function editarMovimento(
     const fracaoId = texto(dados, "fracao_id");
     const intervalo = lerIntervaloQuota(dados, fracaoId);
     if (!intervalo.ok) return { ok: false, mensagem: intervalo.mensagem };
+    const reforco = lerReforco(dados, fracaoId);
+    if (!reforco.ok) return { ok: false, mensagem: reforco.mensagem };
 
     const supabase = await clienteServidor();
     const { error } = await supabase
@@ -209,6 +236,7 @@ export async function editarMovimento(
         fracao_id: fracaoId,
         quota_mes: intervalo.quotaMes,
         quota_mes_fim: intervalo.quotaMesFim,
+        reforco_id: reforco.reforcoId,
       })
       .eq("id", id);
 

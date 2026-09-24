@@ -37,8 +37,6 @@ export type Fracao = {
   permilagem: number | null;
   quota_mensal: number;
   ativo: boolean;
-  /** Quando verdadeiro, o condómino ligado a esta fração tem acesso de administrador. */
-  administracao: boolean;
   atualizado_em: string;
 };
 
@@ -86,6 +84,8 @@ export type Movimento = {
   quota_mes: string | null;
   /** Fim do intervalo de meses, quando o pagamento cobre mais do que um. */
   quota_mes_fim: string | null;
+  /** Reforço extraordinário a que este pagamento pertence, quando é o caso. */
+  reforco_id: string | null;
   transferencia_id: string | null;
   extrato_linha_id: string | null;
   criado_em: string;
@@ -106,6 +106,52 @@ export type QuotaFracao = {
   ano: number;
   quota_mensal: number;
   atualizado_em: string;
+};
+
+/** Valor previsto de uma categoria, no orçamento aprovado em assembleia. */
+export type OrcamentoCategoria = {
+  categoria_id: string;
+  ano: number;
+  valor: number;
+  atualizado_em: string;
+};
+
+/** Disponibilidades previstas no fim do ano, no orçamento aprovado. */
+export type OrcamentoDisponibilidades = {
+  ano: number;
+  caixa: number;
+  deposito_ordem: number;
+  deposito_prazo: number;
+  conta_poupanca: number;
+  atualizado_em: string;
+};
+
+/**
+ * Fração que administrou o condomínio num dado ano. Puramente informativo —
+ * não concede acesso nenhum na aplicação, ao contrário do antigo
+ * fracoes.administracao. O acesso de administrador vem só de profiles.papel.
+ */
+export type AdministradorCondominio = {
+  fracao_id: string;
+  ano: number;
+  criado_em: string;
+};
+
+/**
+ * Reforço extraordinário pedido a cada fração — valor único, com prazo
+ * próprio, ao contrário da quota mensal recorrente. Pode haver vários no
+ * mesmo ano; o que distingue os pagamentos de cada um é reforco_id em
+ * movimentos, sobretudo quando partilham a mesma categoria.
+ */
+export type Reforco = {
+  id: string;
+  ano: number;
+  descricao: string;
+  valor_fracao: number;
+  data_limite: string;
+  categoria_id: string;
+  criado_em: string;
+  criado_por: string | null;
 };
 
 export type Extrato = {
@@ -201,7 +247,6 @@ type ComOmissao =
   | "prioridade"
   | "valor_presenca"
   | "tratamento"
-  | "administracao"
   | "papel"
   | "caixa"
   | "deposito_ordem"
@@ -254,6 +299,10 @@ export type BaseDados = {
       movimentos: Tabela<Movimento>;
       saldos_iniciais: Tabela<SaldosIniciais>;
       quotas_fracao: Tabela<QuotaFracao>;
+      reforcos: Tabela<Reforco>;
+      administradores_condominio: Tabela<AdministradorCondominio>;
+      orcamento_categorias: Tabela<OrcamentoCategoria>;
+      orcamento_disponibilidades: Tabela<OrcamentoDisponibilidades>;
       extratos: Tabela<Extrato>;
       extrato_linhas: Tabela<ExtratoLinha>;
       regras_conciliacao: Tabela<RegraConciliacao>;

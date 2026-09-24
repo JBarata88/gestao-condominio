@@ -10,6 +10,7 @@ import type {
   Fracao,
   Movimento,
   Perfil,
+  Reforco,
   SaldosIniciais,
 } from "./tipos-bd";
 import type { MovimentoCalculo, SaldosAbertura } from "./contas";
@@ -53,22 +54,13 @@ export const perfilAtual = cache(async (): Promise<PerfilAtual | null> => {
 
   if (!perfil) return null;
 
-  // O papel 'admin' basta. Caso contrário, a fração ligada ao perfil pode
-  // estar marcada como "da administração" nas Definições, o que também dá
-  // acesso de administrador.
-  let fracaoDaAdministracao = false;
-  if (perfil.papel !== "admin" && perfil.fracao_id) {
-    const { data: fracao } = await supabase
-      .from("fracoes")
-      .select("administracao")
-      .eq("id", perfil.fracao_id)
-      .maybeSingle();
-    fracaoDaAdministracao = fracao?.administracao === true;
-  }
-
+  // O acesso de administrador depende só do papel da conta, definido em
+  // Definições > Contas. Quem administra o condomínio num dado ano é uma
+  // informação à parte (ver administradores_condominio) e não concede
+  // nenhum acesso extra na aplicação.
   return {
     ...perfil,
-    admin: perfil.papel === "admin" || fracaoDaAdministracao,
+    admin: perfil.papel === "admin",
   };
 });
 
@@ -86,6 +78,40 @@ export const carregarFracoes = cache(async (): Promise<Fracao[]> => {
     .order("ordem", { ascending: true });
   return data ?? [];
 });
+
+export type AdministradorAno = {
+  fracaoId: string;
+  letra: string;
+  andar: string;
+  condominoNome: string | null;
+};
+
+/**
+ * Frações que administram o condomínio num dado ano — informativo, para
+ * mostrar em Painel, Quotas e Relatórios. Não tem relação nenhuma com o
+ * acesso de administrador da aplicação (ver perfilAtual).
+ */
+export const carregarAdministradoresDoAno = cache(
+  async (ano: number): Promise<AdministradorAno[]> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase
+      .from("administradores_condominio")
+      .select("fracao_id, fracoes(letra, andar, condomino_nome)")
+      .eq("ano", ano);
+
+    return ((data ?? []) as unknown as Array<{
+      fracao_id: string;
+      fracoes: Pick<Fracao, "letra" | "andar" | "condomino_nome"> | null;
+    }>)
+      .filter((r) => r.fracoes !== null)
+      .map((r) => ({
+        fracaoId: r.fracao_id,
+        letra: r.fracoes!.letra,
+        andar: r.fracoes!.andar,
+        condominoNome: r.fracoes!.condomino_nome,
+      }));
+  },
+);
 
 export const carregarCategorias = cache(async (): Promise<Categoria[]> => {
   const supabase = await clienteServidor();
@@ -145,8 +171,12 @@ export async function anoDeExercicio(anoParam?: string | number): Promise<number
 
 /**
  * Anos que vale a pena oferecer no seletor: os que têm movimentos ou saldos
- * de abertura, mais o ano em curso e o seguinte, para poder abrir o exercício
- * novo antes de ter lá qualquer movimento.
+ * de abertura, mais o ano civil em curso e o exercício activo.
+ *
+ * Não inclui o ano seguinte ao civil só por o ser: um ano só aparece a
+ * escolher depois de ter dados (mesmo que só os saldos de abertura, criados
+ * pelo botão "Criar exercício" em Definições), senão parece já existir
+ * quando ainda não foi criado.
  */
 export const anosComExercicio = cache(async (): Promise<number[]> => {
   const supabase = await clienteServidor();
@@ -167,7 +197,7 @@ export const anosComExercicio = cache(async (): Promise<number[]> => {
   ]);
 
   const civilActual = new Date().getFullYear();
-  const anos = new Set<number>([civilActual, civilActual + 1]);
+  const anos = new Set<number>([civilActual]);
   anos.add(await definicao<number>("ano_exercicio", civilActual));
   for (const s of saldos.data ?? []) {
     if (anoValido(s.ano)) anos.add(Number(s.ano));
@@ -296,6 +326,43 @@ export const carregarSaldosIniciais = cache(
 );
 
 /**
+ * Valor previsto de cada categoria, no orçamento aprovado para o ano,
+ * indexado por categoria_id. Uma categoria sem linha aqui não foi orçamentada
+ * (conta como zero, não como "por preencher").
+ */
+export const carregarOrcamentoDoAno = cache(
+  async (ano: number): Promise<Map<string, number>> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase
+      .from("orcamento_categorias")
+      .select("categoria_id, valor")
+      .eq("ano", ano);
+
+    return new Map((data ?? []).map((o) => [o.categoria_id, Number(o.valor)]));
+  },
+);
+
+/** Disponibilidades previstas no fim do ano, no orçamento aprovado. */
+export const carregarDisponibilidadesOrcamento = cache(
+  async (ano: number): Promise<SaldosAbertura> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase
+      .from("orcamento_disponibilidades")
+      .select("*")
+      .eq("ano", ano)
+      .maybeSingle();
+
+    if (!data) return ABERTURA_VAZIA;
+    return {
+      caixa: Number(data.caixa),
+      depositoOrdem: Number(data.deposito_ordem),
+      depositoPrazo: Number(data.deposito_prazo),
+      contaPoupanca: Number(data.conta_poupanca),
+    };
+  },
+);
+
+/**
  * Quota mensal de cada fração num ano, indexada por fracao_id.
  *
  * Só traz as frações que têm um valor definido para esse ano. Para as
@@ -322,6 +389,28 @@ export function quotaEfetiva(
 ): number {
   return quotasDoAno.get(fracao.id) ?? Number(fracao.quota_mensal);
 }
+
+export type ReforcoDetalhado = Reforco & {
+  categorias: Pick<Categoria, "nome"> | null;
+};
+
+/**
+ * Reforços extraordinários de um ano, do mais recente para o mais antigo.
+ * Pode haver vários no mesmo ano (obras, elevador, etc.), ao contrário dos
+ * saldos de abertura ou da quota mensal, que são um valor só por ano.
+ */
+export const carregarReforcosDoAno = cache(
+  async (ano: number): Promise<ReforcoDetalhado[]> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase
+      .from("reforcos")
+      .select("*, categorias(nome)")
+      .eq("ano", ano)
+      .order("criado_em", { ascending: false });
+
+    return (data ?? []) as unknown as ReforcoDetalhado[];
+  },
+);
 
 export type MovimentoDetalhado = Movimento & {
   categorias: Pick<Categoria, "nome" | "natureza" | "linha_moaf"> | null;

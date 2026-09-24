@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import BotaoImprimir from "@/components/botao-imprimir";
 import { CabecalhoPagina, Painel } from "@/components/ui";
+import AdministracaoCondominio from "@/components/administracao-condominio";
 import { construirMapa } from "@/lib/contas";
 import {
   anoDeExercicio,
+  carregarAdministradoresDoAno,
   carregarCategorias,
   carregarResumoExercicio,
   carregarSaldosIniciais,
   limitesDoAno,
   perfilAtual,
 } from "@/lib/dados";
-import { euros } from "@/lib/formatos";
+import { dataCurta, euros } from "@/lib/formatos";
 
 export const metadata: Metadata = { title: "Relatórios" };
 
@@ -34,10 +38,11 @@ export default async function PaginaRelatorios({
 
   // O resumo passa por uma função agregada que o condómino também pode chamar:
   // devolve totais por linha do mapa, sem movimentos nem frações individuais.
-  const [movimentos, abertura, categorias] = await Promise.all([
+  const [movimentos, abertura, categorias, administradores] = await Promise.all([
     carregarResumoExercicio(inicio, fim),
     carregarSaldosIniciais(ano),
     carregarCategorias(),
+    carregarAdministradoresDoAno(ano),
   ]);
 
   const rotulosFixos = {
@@ -53,12 +58,34 @@ export default async function PaginaRelatorios({
   const descarregar = `/api/relatorios/moaf?ano=${ano}&inicio=${inicio}&fim=${fim}`;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl print:max-w-none">
+      {/* @page é do documento inteiro: como só esta página precisa de A4
+          horizontal (para caber tudo numa só folha), a regra vem depois da
+          global (que fica em vertical) para a sobrepor só aqui. */}
+      <style>{"@media print { @page { size: A4 landscape; } }"}</style>
+
       <CabecalhoPagina
         sobretitulo={`Exercício de ${ano}`}
         titulo="Relatórios"
         descricao="Mapa de origem e aplicação de fundos, na mesma disposição do ficheiro que usavas."
+        accao={<BotaoImprimir />}
       />
+
+      <div className="-mt-6 mb-6 flex flex-wrap items-center justify-between gap-3 print:-mt-3 print:mb-3">
+        <AdministracaoCondominio administradores={administradores} ano={ano} />
+        <Link
+          href={`/relatorios/orcamento?ano=${ano}`}
+          className="text-sm text-pergaminho-500 underline-offset-4 transition-colors duration-150 hover:text-verdete-700 hover:underline print:hidden"
+        >
+          Orçamento vs Realizado →
+        </Link>
+      </div>
+
+      {/* Só na impressão: o formulário abaixo (datas + botão) fica de fora,
+          mas o período escolhido continua visível no papel. */}
+      <p className="mb-6 hidden text-sm text-pergaminho-600 print:block">
+        Período: {dataCurta(inicio)} a {dataCurta(fim)}
+      </p>
 
       <Painel
         titulo="Período"
@@ -67,6 +94,7 @@ export default async function PaginaRelatorios({
             ? "Escolhe o intervalo e pré-visualiza os totais antes de descarregar."
             : "Escolhe o intervalo. Os totais são os do condomínio inteiro, em modo de consulta."
         }
+        className="print:hidden"
       >
         <form method="get" className="flex flex-wrap items-end gap-4">
           <input type="hidden" name="ano" value={ano} />
@@ -103,17 +131,26 @@ export default async function PaginaRelatorios({
         </form>
       </Painel>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Painel titulo="Origem de fundos">
-          <dl className="flex flex-col gap-2 text-sm">
+      {/* No ecrã, dois grupos de duas colunas (duas linhas). Na impressão os
+          quatro painéis passam para uma única linha, para caber tudo numa
+          só folha A4 horizontal. */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2 print:mt-3 print:grid-cols-4 print:gap-4">
+        <Painel
+          titulo="Origem de fundos"
+          className="print:border-0 print:p-0 print:shadow-none"
+        >
+          <dl className="flex flex-col gap-2 text-sm print:gap-1 print:text-xs">
             <Linha rotulo="Administração anterior" valor={mapa.origem.anterior.total} />
             <Linha rotulo="Administração actual" valor={mapa.origem.atual.subtotal} />
             <Linha rotulo="Total" valor={mapa.origem.total} forte />
           </dl>
         </Painel>
 
-        <Painel titulo="Aplicação de fundos">
-          <dl className="flex flex-col gap-2 text-sm">
+        <Painel
+          titulo="Aplicação de fundos"
+          className="print:border-0 print:p-0 print:shadow-none"
+        >
+          <dl className="flex flex-col gap-2 text-sm print:gap-1 print:text-xs">
             <Linha rotulo="Despesas" valor={mapa.aplicacao.despesas.subtotal} />
             <Linha
               rotulo="Disponibilidades"
@@ -122,11 +159,12 @@ export default async function PaginaRelatorios({
             <Linha rotulo="Total" valor={mapa.aplicacao.total} forte />
           </dl>
         </Painel>
-      </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Painel titulo="Receitas por categoria">
-          <dl className="flex flex-col gap-2 text-sm">
+        <Painel
+          titulo="Receitas por categoria"
+          className="print:border-0 print:p-0 print:shadow-none"
+        >
+          <dl className="flex flex-col gap-2 text-sm print:gap-1 print:text-xs">
             {mapa.origem.atual.linhas.map((l) => (
               <Linha key={l.rotulo} rotulo={l.rotulo} valor={l.valor} />
             ))}
@@ -138,8 +176,11 @@ export default async function PaginaRelatorios({
           </dl>
         </Painel>
 
-        <Painel titulo="Despesas por categoria">
-          <dl className="flex flex-col gap-2 text-sm">
+        <Painel
+          titulo="Despesas por categoria"
+          className="print:border-0 print:p-0 print:shadow-none"
+        >
+          <dl className="flex flex-col gap-2 text-sm print:gap-1 print:text-xs">
             {mapa.aplicacao.despesas.linhas.map((l) => (
               <Linha key={l.rotulo} rotulo={l.rotulo} valor={l.valor} />
             ))}
@@ -152,7 +193,7 @@ export default async function PaginaRelatorios({
         </Painel>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)]">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)] print:mt-3 print:border-0 print:p-0 print:shadow-none">
         <div>
           <p className="text-sm text-pergaminho-600">Célula de controlo</p>
           <p
@@ -172,7 +213,7 @@ export default async function PaginaRelatorios({
         {admin && (
           <a
             href={descarregar}
-            className="inline-flex items-center justify-center rounded-lg bg-verdete-700 px-5 py-3 text-sm font-medium text-pergaminho-50 shadow-[var(--shadow-medio)] transition-[transform,background-color,box-shadow] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:bg-verdete-600 hover:shadow-[var(--shadow-alto)] active:translate-y-0 active:bg-verdete-800"
+            className="inline-flex items-center justify-center rounded-lg bg-verdete-700 px-5 py-3 text-sm font-medium text-pergaminho-50 shadow-[var(--shadow-medio)] transition-[transform,background-color,box-shadow] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:bg-verdete-600 hover:shadow-[var(--shadow-alto)] active:translate-y-0 active:bg-verdete-800 print:hidden"
           >
             Descarregar em Excel
           </a>

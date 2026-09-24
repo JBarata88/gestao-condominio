@@ -3,11 +3,14 @@ import { Painel, Vazio } from "@/components/ui";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { dataCurta } from "@/lib/formatos";
 import type { Extrato } from "@/lib/tipos-bd";
+import { exigirAdminOuRedirecionar } from "../exigir-admin";
 import Importador from "./importador";
 
 export const metadata: Metadata = { title: "Extratos bancários · Definições" };
 
 export default async function PaginaDefinicoesExtratos() {
+  await exigirAdminOuRedirecionar();
+
   const supabase = await clienteServidor();
   const { data } = await supabase
     .from("extratos")

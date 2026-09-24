@@ -16,6 +16,7 @@ export type CategoriaEscolha = {
 };
 
 export type FracaoEscolha = { id: string; letra: string; andar: string };
+export type ReforcoEscolha = { id: string; descricao: string; categoriaId: string };
 
 const CLASSE_CAMPO =
   "w-full rounded-lg border border-pergaminho-300 bg-white px-3 py-2.5 text-verdete-950 transition-[border-color] duration-150 hover:border-pergaminho-400 focus:border-verdete-500 focus:outline-none";
@@ -39,11 +40,13 @@ export default function FormularioLancamento({
   conta,
   categorias,
   fracoes,
+  reforcos = [],
   ano,
 }: {
   conta: "caixa" | "banco";
   categorias: CategoriaEscolha[];
   fracoes: FracaoEscolha[];
+  reforcos?: ReforcoEscolha[];
   ano: number;
 }) {
   const [aberto, setAberto] = useState(false);
@@ -58,6 +61,9 @@ export default function FormularioLancamento({
 
   const categoriaEscolhida = categorias.find((c) => c.id === categoriaId);
   const eQuota = categoriaEscolhida?.nome === "Quotizações";
+  const reforcosCompativeis = reforcos.filter(
+    (r) => r.categoriaId === categoriaId,
+  );
 
   // Uma categoria de receita não deve poder ser lançada como despesa.
   const compativeis = categorias.filter(
@@ -229,6 +235,53 @@ export default function FormularioLancamento({
               Basta indicar a fração para este pagamento entrar na conta
               corrente da fração. O mês é só uma anotação, para ficar escrito
               a que período esta transferência respeitava.
+            </p>
+          </div>
+        )}
+
+        {/* O reforço só aparece quando a categoria escolhida tem pelo menos
+            um reforço criado em Definições > Quotas do ano. */}
+        {!eQuota && sentido === "receita" && reforcosCompativeis.length > 0 && (
+          <div className="grid gap-5 rounded-lg border border-ocre-200 bg-ocre-50/60 p-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label htmlFor={`fracao-reforco-${conta}`} className="text-sm font-medium text-verdete-800">
+                Fração
+              </label>
+              <select
+                id={`fracao-reforco-${conta}`}
+                name="fracao_id"
+                className={CLASSE_CAMPO}
+              >
+                <option value="">Sem fração</option>
+                {fracoes.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.letra} · {f.andar}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor={`reforco-${conta}`} className="text-sm font-medium text-verdete-800">
+                Reforço
+              </label>
+              <select
+                id={`reforco-${conta}`}
+                name="reforco_id"
+                className={CLASSE_CAMPO}
+              >
+                <option value="">Nenhum</option>
+                {reforcosCompativeis.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.descricao}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <p className="text-sm text-ocre-800 sm:col-span-2">
+              Indica a fração e o reforço para este pagamento contar na tabela
+              desse reforço, em Quotas.
             </p>
           </div>
         )}

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Painel } from "@/components/ui";
-import { perfilAtual } from "@/lib/dados";
 import { clienteAdministrativo } from "@/lib/supabase/servidor";
 import type { Fracao, Perfil } from "@/lib/tipos-bd";
+import { exigirAdminOuRedirecionar } from "../exigir-admin";
 import GestorContas, {
   type ContaVista,
   type FracaoOpcao,
@@ -11,7 +11,7 @@ import GestorContas, {
 export const metadata: Metadata = { title: "Contas · Definições" };
 
 export default async function PaginaDefinicoesContas() {
-  const perfil = await perfilAtual();
+  const perfil = await exigirAdminOuRedirecionar();
 
   let dados:
     | { ok: true; contas: ContaVista[]; fracoes: FracaoOpcao[] }
@@ -38,7 +38,6 @@ export default async function PaginaDefinicoesContas() {
       id: f.id,
       letra: f.letra,
       andar: f.andar,
-      administracao: f.administracao,
     }));
 
     const contas: ContaVista[] = ((perfis.data ?? []) as Perfil[])

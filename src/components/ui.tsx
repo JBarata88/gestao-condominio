@@ -6,26 +6,30 @@ export function CabecalhoPagina({
   sobretitulo,
   titulo,
   descricao,
+  dica,
   accao,
 }: {
   sobretitulo?: string;
   titulo: string;
   descricao?: string;
+  /** Nota breve junto ao título, por exemplo uma DicaInformacao. */
+  dica?: ReactNode;
   accao?: ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-4 print:mb-4">
       <div>
         {sobretitulo && (
-          <p className="font-display text-sm tracking-[0.2em] text-ocre-600 uppercase">
+          <p className="font-display text-sm tracking-[0.2em] text-ocre-600 uppercase print:text-xs">
             {sobretitulo}
           </p>
         )}
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-[-0.03em] text-verdete-950">
+        <h1 className="mt-2 flex items-center gap-2 font-display text-4xl font-semibold tracking-[-0.03em] text-verdete-950 print:mt-1 print:text-2xl">
           {titulo}
+          {dica}
         </h1>
         {descricao && (
-          <p className="mt-2 max-w-2xl leading-relaxed text-pergaminho-600">
+          <p className="mt-2 max-w-2xl leading-relaxed text-pergaminho-600 print:hidden">
             {descricao}
           </p>
         )}
@@ -35,29 +39,59 @@ export function CabecalhoPagina({
   );
 }
 
+/**
+ * Ícone "i" com um popup de informação, para notas que não precisam de estar
+ * sempre visíveis no ecrã. Usa <details> em vez de estado em React: não
+ * precisa de "use client" e fecha-se sozinho ao abrir outra.
+ */
+export function DicaInformacao({ children }: { children: ReactNode }) {
+  return (
+    <details className="relative inline-block align-middle text-base leading-none print:hidden">
+      <summary
+        aria-label="Mais informação"
+        className="grid size-5 cursor-pointer list-none place-items-center rounded-full border border-pergaminho-300 bg-white text-[11px] font-semibold text-pergaminho-500 transition-colors duration-150 hover:border-verdete-400 hover:text-verdete-700 marker:content-none [&::-webkit-details-marker]:hidden"
+      >
+        i
+      </summary>
+      <div className="absolute top-full left-0 z-10 mt-2 w-72 max-w-[80vw] rounded-lg border border-pergaminho-200 bg-white p-3 text-sm leading-relaxed font-normal text-pergaminho-700 shadow-[var(--shadow-medio)]">
+        {children}
+      </div>
+    </details>
+  );
+}
+
 /** Superfície elevada, o segundo plano do sistema de profundidade. */
 export function Painel({
   titulo,
   descricao,
+  className = "",
+  id,
   children,
 }: {
   titulo?: string;
   descricao?: string;
+  className?: string;
+  id?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)]">
+    <section
+      id={id}
+      className={`rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)] ${className}`}
+    >
       {titulo && (
-        <h2 className="font-display text-xl font-semibold text-verdete-900">
+        <h2 className="font-display text-xl font-semibold text-verdete-900 print:text-base">
           {titulo}
         </h2>
       )}
       {descricao && (
-        <p className="mt-1.5 leading-relaxed text-pergaminho-600">
+        <p className="mt-1.5 leading-relaxed text-pergaminho-600 print:hidden">
           {descricao}
         </p>
       )}
-      <div className={titulo || descricao ? "mt-5" : undefined}>{children}</div>
+      <div className={titulo || descricao ? "mt-5 print:mt-2" : undefined}>
+        {children}
+      </div>
     </section>
   );
 }

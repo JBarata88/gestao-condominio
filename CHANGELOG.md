@@ -8,6 +8,257 @@ numeração segue o [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [0.11.0] — 2026-09-24
+
+### Adicionado
+- **Orçamento aprovado em assembleia**, por ano de exercício.
+  - Define-se em **Definições → Orçamento**: um valor previsto por
+    categoria, mais as disponibilidades previstas no fim do ano — a mesma
+    disposição do ORÇAMENTO202X.xls que já era usado.
+  - **Relatórios → Orçamento vs Realizado** compara o previsto com o real,
+    linha a linha, com desvio em valor e em percentagem — reproduz o
+    MOAFORÇAMENTO202X.xls. Tem as mesmas duas opções do mapa de fundos:
+    **Imprimir** e **Descarregar em Excel**.
+
+---
+
+## [0.10.0] — 2026-09-24
+
+### Alterado
+- **O acesso de administrador deixa de depender da fração.** Antes, marcar
+  uma fração como "da administração" dava acesso de escrita à aplicação
+  inteira a quem lá estivesse ligado — confundia o cargo de administrador do
+  condomínio (que roda, ano a ano, entre condóminos) com o acesso de
+  administrador da aplicação. Agora são coisas separadas:
+  - O acesso à aplicação define-se só em **Definições → Contas**.
+  - Quem administra o condomínio passa a ser uma escolha **por ano de
+    exercício**, feita em **Definições → Frações**, sem dar nenhum acesso
+    extra — aparece só como informação em **Painel**, **Quotas** e
+    **Relatórios**. As frações já marcadas ficam associadas ao exercício
+    activo.
+- **Definições → Frações** passa a ser uma tabela com todas as frações, com
+  um botão **Editar** por linha que abre os campos — em vez de um formulário
+  sempre aberto por fração.
+  - Sai o campo **Quota mensal**: já se define em Definições → Quotas do
+    ano.
+- **Definições passa a estar acessível a qualquer condómino**, não só à
+  administração — mas só vê a aba **Conta**, para consultar os seus dados e
+  **alterar a própria palavra-passe**. As restantes áreas continuam
+  reservadas à administração.
+
+---
+
+## [0.9.6] — 2026-09-24
+
+### Adicionado
+- **Reforços extraordinários** — um valor único por fração, com prazo
+  próprio, para pedidos pontuais como os 200€ por fração para obras de 2025.
+  Ao contrário da quota mensal, pode haver vários no mesmo ano.
+  - Criam-se em **Definições → Quotas do ano**: descrição, valor por fração,
+    categoria de receita e data limite de pagamento.
+  - A página de **Quotas** ganha uma tabela por reforço, com o estado de
+    cada fração (pago, parcial, em falta, por pagar) tal como a tabela de
+    quotas mensais.
+  - O lançamento e a edição de um movimento de receita passam a ter um
+    campo **Reforço**, quando a categoria escolhida tiver algum, para o
+    pagamento contar na tabela certa.
+  - Criar um reforço associa automaticamente os pagamentos já lançados
+    nessa categoria e nesse ano que ainda não pertenciam a nenhum reforço —
+    é o que liga os pagamentos de obras de 2025, lançados antes de este
+    conceito existir.
+
+---
+
+## [0.9.5] — 2026-09-24
+
+### Removido
+- **Edição manual dos saldos de abertura em Definições.** 2025 é o ano-base;
+  todos os anos seguintes passam sempre a partir dos saldos de caixa e banco
+  do fecho do ano anterior, através de "Abrir exercício" — deixa de haver
+  forma de os substituir à mão.
+- Botão **"Eliminar exercícios sem movimentos"** na tabela de Exercícios —
+  cada exercício sem movimentos já se elimina individualmente pelo botão
+  "Eliminar" da sua própria linha.
+
+---
+
+## [0.9.4] — 2026-09-23
+
+### Corrigido
+- **O seletor de ano do topo já não oferece o ano civil seguinte por
+  antecipação.** Antes, 2027 aparecia sempre na lista mesmo sem exercício
+  nenhum criado, dando a entender que já existia. Agora só aparece depois de
+  ter dados — criado pelo botão "Criar exercício" em Definições, tal como na
+  tabela de Exercícios.
+
+---
+
+## [0.9.3] — 2026-09-23
+
+### Alterado
+- **"Criar exercício" passa a pedir o ano**, em vez de assumir sempre o
+  seguinte ao mais recente — dá para criar (ou preencher em falta) qualquer
+  ano, passado ou futuro. O ano seguinte continua sugerido por omissão.
+
+---
+
+## [0.9.2] — 2026-09-23
+
+### Removido
+- Campo **"Ano do exercício por omissão"** em Prazos e exercício — trocar o
+  exercício activo faz-se agora só pela tabela de Exercícios, com "Tornar
+  activo".
+
+### Adicionado
+- Botão **"Criar exercício de {ano}"** junto à tabela de Exercícios: cria
+  sempre o ano a seguir ao mais recente já existente (transporta o fecho do
+  ano anterior e as quotas em vigor), sem precisares de já estar a ver esse
+  ano no seletor do topo.
+- Botão **"Eliminar exercícios sem movimentos"**, com confirmação, que apaga
+  de uma vez todos os exercícios futuros e passados sem movimentos lançados
+  — nunca o activo, nunca um com movimentos. Só aparece quando há pelo menos
+  um para eliminar.
+
+---
+
+## [0.9.1] — 2026-09-23
+
+### Adicionado
+- **Definições → Condomínio → Exercícios** ganha um estado por linha —
+  **activo**, **futuro** ou **inactivo** — em vez de só "activo"/"sem
+  abertura". O ano a seguir ao activo (ex.: 2027) aparece sempre na tabela
+  como "futuro", mesmo sem dados, para se poder preparar com antecedência.
+  - Botão **"Abrir"** por linha, para qualquer exercício sem saldos de
+    abertura (não só o que está a ser consultado no seletor do topo) —
+    transporta o fecho do ano anterior e as quotas em vigor.
+  - Botão **"Tornar activo"**, para escolher qual o exercício por omissão
+    directamente na tabela, sem teres de editar o campo "Ano do exercício
+    por omissão" à parte.
+  - Ligação **"Editar"** por linha, que leva ao formulário de saldos de
+    abertura já com esse ano seleccionado.
+
+### Alterado
+- **Abrir um exercício deixa de o tornar activo sozinho.** Antes, abrir o
+  exercício seguinte trocava logo o que toda a gente via por omissão; agora
+  fica "futuro" até se escolher "Tornar activo" — dá para preparar o ano
+  novo com antecedência sem afectar ninguém.
+
+---
+
+## [0.9.0] — 2026-09-23
+
+### Alterado
+- **Painel:** a secção do mês corrente passa a mostrar o exercício inteiro.
+  "Receitas do mês" e "Despesas do mês" tornam-se **Receitas totais do ano**
+  e **Despesas totais do ano**; "Resultado do mês" dá lugar ao **Top 3
+  despesas do ano**, com a categoria e o valor de cada uma. Usa a mesma
+  agregação por categoria do mapa de Relatórios, para os números baterem
+  certo entre as duas páginas.
+
+---
+
+## [0.8.9] — 2026-09-23
+
+### Alterado
+- A impressão de Relatórios passa a **A4 horizontal** (como Quotas), para
+  caber tudo numa só folha: os quatro painéis (Origem, Aplicação, Receitas e
+  Despesas por categoria) passam para uma única linha em vez de duas, e o
+  cabeçalho, o texto de apoio e os espaçamentos ficam mais compactos só no
+  papel.
+
+---
+
+## [0.8.8] — 2026-09-23
+
+### Adicionado
+- **Relatórios ganha um botão "Imprimir"**, que gera a impressão do mapa
+  numa folha A4 vertical, com o mesmo aspecto do ecrã. O formulário de
+  período fica de fora da folha impressa, mas a data de início e fim
+  escolhidas aparecem como texto no topo. O botão "Imprimir" foi extraído
+  para um componente partilhado (`components/botao-imprimir.tsx`), usado
+  também em Quotas.
+
+---
+
+## [0.8.7] — 2026-09-23
+
+### Alterado
+- **Quotas:** removido o KPI "Total Parcial" — ficam três: Total Pago, Total
+  Em Falta e Total Por Pagar (este já inclui o valor parcial em falta).
+
+---
+
+## [0.8.6] — 2026-09-23
+
+### Alterado
+- **Quotas:** o KPI "Total Por Pagar" passa a somar tudo o que ainda falta
+  pagar nos 12 meses do ano (parcial, pendente, futuro e também o que está
+  em atraso), em vez de só o mês corrente. "Total Em Falta" mantém-se
+  apenas com o que já passou do prazo.
+
+---
+
+## [0.8.5] — 2026-09-23
+
+### Alterado
+- **Quotas:** os quatro KPIs (Total Pago, Total Parcial, Total Em Falta,
+  Total Por Pagar) passam a aparecer sempre no ecrã, não só na impressão,
+  substituindo a etiqueta única "Por cobrar".
+
+---
+
+## [0.8.4] — 2026-09-23
+
+### Adicionado
+- A impressão do mapa de Quotas ganha quatro KPIs no topo — **Total Pago**,
+  **Total Parcial**, **Total Em Falta** e **Total Por Pagar** —, um por cada
+  estado com dinheiro em jogo. Só saem no papel; no ecrã a cor de cada
+  célula já conta a mesma história.
+
+---
+
+## [0.8.3] — 2026-09-23
+
+### Alterado
+- A impressão do mapa de Quotas passa a sair em **A4 horizontal** (em vez de
+  vertical), para a tabela — larga, com um mês em cada coluna — ter mais
+  espaço e ficar mais legível no papel.
+
+---
+
+## [0.8.2] — 2026-09-23
+
+### Alterado
+- **Quotas:** o texto de explicação sob o título dá lugar a um ícone (i),
+  com o mesmo texto num popup — o cabeçalho fica mais limpo sem perder a
+  informação.
+- **Quotas ganha um botão "Imprimir"**, que gera a impressão do mapa de
+  quotas numa folha A4 vertical, com o mesmo aspecto do ecrã (cores de
+  estado incluídas). A navegação lateral e o seletor de ano ficam de fora
+  da impressão.
+
+---
+
+## [0.8.1] — 2026-09-23
+
+### Corrigido
+- **Recibos, recibos de presença e documentos de caixa (limpeza) saem sempre
+  em folha A4, divididos ao meio.** Cada par de recibos passa a ocupar uma
+  tabela de duas linhas com altura fixa (metade da página), separadas por uma
+  linha divisória, para que os dois recibos de cada folha tenham sempre
+  exatamente o mesmo tamanho, seja qual for o texto de cada um.
+  - Resolve a página em branco que aparecia entre cada par de recibos: a
+    tabela ocupava 100% da página, sem espaço para a quebra de página
+    seguinte, que acabava por saltar sozinha para uma página nova.
+- **O MOAF passa a reproduzir com exatidão a formatação de
+  `ASSETS/MOAF202601.xlsx`**: tipo e tamanho de letra (MS Sans Serif, 10pt),
+  itálico no cabeçalho, negrito nas linhas de sub-total/total/controlo,
+  larguras de coluna, a linha vertical à esquerda de cada secção, e a
+  configuração de impressão (margens, escala, centrado, sem grelha, área de
+  impressão).
+
+---
+
 ## [0.8.0] — 2026-09-07
 
 ### Alterado

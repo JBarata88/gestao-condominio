@@ -1,10 +1,18 @@
 import {
   AlignmentType,
+  BorderStyle,
   Document,
+  HeightRule,
+  LineRuleType,
   Packer,
   PageBreak,
   Paragraph,
+  Table,
+  TableCell,
+  TableRow,
   TextRun,
+  VerticalAlign,
+  WidthType,
 } from "docx";
 import { valorPorExtensoMaiusculas } from "../extenso";
 import { dataPorExtenso, euros, mesPorExtenso } from "../formatos";
@@ -51,6 +59,19 @@ export type ReciboPagamento = {
 export type PedidoRecibo = ReciboQuota | ReciboPresenca | ReciboPagamento;
 
 const TIPO_LETRA = "Calibri";
+
+// Folha A4 em twips (1/20 pt), com margens iguais em todos os lados. Cada
+// recibo ocupa exactamente metade da área útil, para caberem sempre dois por
+// página com o mesmo tamanho, como nos originais impressos.
+const A4_LARGURA = 11906;
+const A4_ALTURA = 16838;
+const MARGEM = 720;
+const ALTURA_UTIL = A4_ALTURA - MARGEM * 2;
+// Reserva um pouco de espaço para o parágrafo de quebra de página entre
+// pares de recibos: sem esta folga, a tabela ocuparia 100% da página e o
+// parágrafo da quebra ficava sem onde caber, criando uma página em branco.
+const RESERVA_QUEBRA = 120;
+const ALTURA_METADE = Math.floor((ALTURA_UTIL - RESERVA_QUEBRA) / 2);
 
 function p(
   texto: string | TextRun[],
@@ -184,11 +205,46 @@ function corpoPagamento(
   ];
 }
 
+function corpoDoRecibo(
+  pedido: PedidoRecibo,
+  condominio: CabecalhoCondominio,
+  localidade: string,
+  assinatura: string,
+): Paragraph[] {
+  if (pedido.tipo === "quota") {
+    return corpoQuota(pedido, condominio, localidade, assinatura);
+  }
+  if (pedido.tipo === "presenca") {
+    return corpoPresenca(pedido, condominio, localidade);
+  }
+  return corpoPagamento(pedido, condominio);
+}
+
+/** Uma célula com altura fixa igual a metade da página, para o recibo caber sempre no mesmo tamanho. */
+function celaDeRecibo(
+  conteudo: Paragraph[],
+  comLinhaDivisoria: boolean,
+): TableCell {
+  return new TableCell({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    verticalAlign: VerticalAlign.TOP,
+    borders: comLinhaDivisoria
+      ? {
+          bottom: { style: BorderStyle.SINGLE, size: 6, color: "000000" },
+        }
+      : undefined,
+    children: conteudo,
+  });
+}
+
 /**
  * Gera um documento Word com um ou vários recibos.
  *
- * Como nos ficheiros originais, cabem dois recibos por página, separados por
- * uma linha. A partir do terceiro começa uma página nova.
+ * A folha é sempre A4 e cada par de recibos ocupa uma tabela de duas linhas
+ * com a mesma altura fixa (metade da área útil da página), separadas por uma
+ * linha divisória — assim os dois recibos de cada página têm sempre o mesmo
+ * tamanho, independentemente do texto de cada um. A partir do terceiro
+ * recibo começa uma página nova.
  */
 export async function gerarRecibos({
   pedidos,
@@ -205,51 +261,76 @@ export async function gerarRecibos({
     throw new Error("Não há recibos para gerar.");
   }
 
-  const paragrafos: Paragraph[] = [];
+  const conteudo: (Paragraph | Table)[] = [];
 
-  pedidos.forEach((pedido, indice) => {
-    if (indice > 0) {
-      const parDeCima = indice % 2 === 1;
-      if (parDeCima) {
-        // Segundo recibo da mesma página: separador, como nos originais.
-        paragrafos.push(
-          new Paragraph({
-            spacing: { before: 360, after: 360 },
-            children: [
-              new TextRun({
-                text: "_".repeat(98),
-                size: 22,
-                font: TIPO_LETRA,
-              }),
-            ],
-          }),
-        );
-      } else {
-        paragrafos.push(
-          new Paragraph({ children: [new PageBreak()] }),
-        );
-      }
-    }
-
-    if (pedido.tipo === "quota") {
-      paragrafos.push(
-        ...corpoQuota(pedido, condominio, localidade, assinatura),
+  for (let i = 0; i < pedidos.length; i += 2) {
+    if (i > 0) {
+      conteudo.push(
+        new Paragraph({
+          spacing: { before: 0, after: 0, line: 20, lineRule: LineRuleType.EXACT },
+          children: [new PageBreak()],
+        }),
       );
-    } else if (pedido.tipo === "presenca") {
-      paragrafos.push(...corpoPresenca(pedido, condominio, localidade));
-    } else {
-      paragrafos.push(...corpoPagamento(pedido, condominio));
     }
-  });
+
+    const primeiro = pedidos[i];
+    const segundo = pedidos[i + 1] as PedidoRecibo | undefined;
+
+    const linhas = [
+      new TableRow({
+        height: { value: ALTURA_METADE, rule: HeightRule.EXACT },
+        cantSplit: true,
+        children: [
+          celaDeRecibo(
+            corpoDoRecibo(primeiro, condominio, localidade, assinatura),
+            segundo !== undefined,
+          ),
+        ],
+      }),
+    ];
+
+    if (segundo !== undefined) {
+      linhas.push(
+        new TableRow({
+          height: { value: ALTURA_METADE, rule: HeightRule.EXACT },
+          cantSplit: true,
+          children: [
+            celaDeRecibo(
+              corpoDoRecibo(segundo, condominio, localidade, assinatura),
+              false,
+            ),
+          ],
+        }),
+      );
+    }
+
+    conteudo.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: BorderStyle.NONE, size: 0, color: "auto" },
+          bottom: { style: BorderStyle.NONE, size: 0, color: "auto" },
+          left: { style: BorderStyle.NONE, size: 0, color: "auto" },
+          right: { style: BorderStyle.NONE, size: 0, color: "auto" },
+          insideHorizontal: { style: BorderStyle.NONE, size: 0, color: "auto" },
+          insideVertical: { style: BorderStyle.NONE, size: 0, color: "auto" },
+        },
+        rows: linhas,
+      }),
+    );
+  }
 
   const documento = new Document({
     creator: "Gestão de Condomínio",
     sections: [
       {
         properties: {
-          page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } },
+          page: {
+            size: { width: A4_LARGURA, height: A4_ALTURA },
+            margin: { top: MARGEM, right: MARGEM, bottom: MARGEM, left: MARGEM },
+          },
         },
-        children: paragrafos,
+        children: conteudo,
       },
     ],
   });

@@ -27,7 +27,7 @@ export default function Navegacao({
   return (
     <>
       {/* Barra superior, só em ecrãs pequenos */}
-      <div className="flex items-center justify-between border-b border-pergaminho-200 bg-white px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between border-b border-pergaminho-200 bg-white px-4 py-3 lg:hidden print:hidden">
         <span className="font-display text-base font-semibold text-verdete-900">
           Gestão de Condomínio
         </span>
@@ -44,7 +44,7 @@ export default function Navegacao({
 
       <nav
         id="menu-principal"
-        className={`${aberto ? "block" : "hidden"} border-b border-pergaminho-200 bg-white lg:block lg:border-r lg:border-b-0`}
+        className={`${aberto ? "block" : "hidden"} border-b border-pergaminho-200 bg-white lg:block lg:border-r lg:border-b-0 print:hidden`}
         aria-label="Navegação principal"
       >
         <div className="flex h-full flex-col lg:w-60">

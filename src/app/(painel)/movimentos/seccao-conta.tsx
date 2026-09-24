@@ -6,6 +6,7 @@ import type { TipoConta } from "@/lib/tipos-bd";
 import LinhaMovimento, {
   type CategoriaEscolha,
   type FracaoEscolha,
+  type ReforcoEscolha,
 } from "./linha-movimento";
 
 export type LinhaConta = {
@@ -22,6 +23,7 @@ export type LinhaConta = {
   fracao_id: string | null;
   quota_mes: string | null;
   quota_mes_fim: string | null;
+  reforco_id: string | null;
   saldoBanco: number;
   saldoCaixa: number;
   categorias: { nome: string } | null;
@@ -47,6 +49,7 @@ export default function SeccaoConta({
   filtrado = false,
   categorias = [],
   fracoes = [],
+  reforcos = [],
   ano,
 }: {
   titulo: string;
@@ -71,6 +74,7 @@ export default function SeccaoConta({
   /** Necessárias para o formulário de edição, quando podeGerir é true. */
   categorias?: CategoriaEscolha[];
   fracoes?: FracaoEscolha[];
+  reforcos?: ReforcoEscolha[];
   ano?: number;
 }) {
   const saldoDe = (l: LinhaConta) =>
@@ -167,6 +171,7 @@ export default function SeccaoConta({
                     colunas={7}
                     categorias={categorias}
                     fracoes={fracoes}
+                    reforcos={reforcos}
                     ano={ano ?? new Date().getFullYear()}
                   />
                 ) : (

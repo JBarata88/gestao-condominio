@@ -183,3 +183,28 @@ export function totalPorCobrar(linhas: readonly LinhaQuotas[]): number {
     ),
   );
 }
+
+export type TotaisQuotas = {
+  pago: number;
+  /** Em falta: só o que já passou do prazo. */
+  atrasado: number;
+  /** Por pagar: tudo o que ainda falta, dos 12 meses do ano — inclui os
+   * meses futuros, os parciais e também os atrasados. */
+  porPagar: number;
+};
+
+/** Totais em euros para os KPIs do mapa de quotas. */
+export function totaisQuotas(linhas: readonly LinhaQuotas[]): TotaisQuotas {
+  const celulas = linhas.flatMap((l) => l.celulas);
+
+  return {
+    // Igual ao pago, já que a cascata nunca deixa o pago ultrapassar o devido.
+    pago: somar(
+      celulas.filter((c) => c.estado === "pago").map((c) => c.devido),
+    ),
+    atrasado: somar(
+      celulas.filter((c) => c.estado === "atrasado").map((c) => c.emFalta),
+    ),
+    porPagar: somar(celulas.map((c) => c.emFalta)),
+  };
+}
