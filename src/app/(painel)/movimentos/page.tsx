@@ -148,15 +148,7 @@ export default async function PaginaMovimentos({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <CabecalhoPagina
-        sobretitulo={`Exercício de ${ano}`}
-        titulo="Movimentos"
-        descricao={
-          admin
-            ? "Banco e caixa em blocos separados, como nas folhas mensais. O saldo é calculado a partir dos movimentos, não guardado."
-            : "Todos os movimentos do exercício, em consulta. Só a administração pode lançar ou corrigir."
-        }
-      />
+      <CabecalhoPagina sobretitulo={`Exercício de ${ano}`} titulo="Movimentos" />
 
       <BarraFiltros
         mes={mes}

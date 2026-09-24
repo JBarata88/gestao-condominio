@@ -84,7 +84,10 @@ export default function Navegacao({
             })}
           </ul>
 
-          <div className="mt-auto border-t border-pergaminho-200 px-5 py-4">
+          {/* Sem mt-auto de propósito: fica logo a seguir à última opção do
+              menu, para nunca ser preciso rolar a página até ao fim só para
+              terminar a sessão. */}
+          <div className="border-t border-pergaminho-200 px-5 py-4">
             <p className="truncate text-sm font-medium text-verdete-900">
               {nome}
             </p>
@@ -97,7 +100,13 @@ export default function Navegacao({
                 Terminar sessão
               </button>
             </form>
-            <p className="mt-3 text-xs text-pergaminho-400">Versão {VERSAO}</p>
+            <Link
+              href="/alteracoes"
+              onClick={() => setAberto(false)}
+              className="mt-3 block text-xs text-pergaminho-400 underline-offset-2 transition-colors duration-150 hover:text-verdete-700 hover:underline"
+            >
+              Versão {VERSAO} · o que mudou
+            </Link>
           </div>
         </div>
       </nav>

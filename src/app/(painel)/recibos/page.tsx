@@ -62,11 +62,7 @@ export default async function PaginaRecibos({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <CabecalhoPagina
-        sobretitulo="Documentos"
-        titulo="Recibos"
-        descricao="Os três modelos que já usavas, gerados a partir dos dados das frações. Cabem dois recibos por página, como nos ficheiros originais."
-      />
+      <CabecalhoPagina sobretitulo="Documentos" titulo="Recibos" />
 
       <Painel>
         <FormularioRecibos

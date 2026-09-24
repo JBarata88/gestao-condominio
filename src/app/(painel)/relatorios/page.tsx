@@ -67,7 +67,6 @@ export default async function PaginaRelatorios({
       <CabecalhoPagina
         sobretitulo={`Exercício de ${ano}`}
         titulo="Relatórios"
-        descricao="Mapa de origem e aplicação de fundos, na mesma disposição do ficheiro que usavas."
         accao={<BotaoImprimir />}
       />
 

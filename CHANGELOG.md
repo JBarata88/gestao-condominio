@@ -8,6 +8,30 @@ numeração segue o [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.0] — 2026-09-24
+
+Primeira versão em produção.
+
+### Removido
+- Texto de apoio por baixo do título em **Movimentos**, **Relatórios** e
+  **Recibos** — as três páginas já se explicam sozinhas.
+
+---
+
+## [0.11.1] — 2026-09-24
+
+### Adicionado
+- **"Versão X · o que mudou"**, no fundo da barra lateral, passa a ligar a
+  uma página nova com o histórico de alterações (o próprio CHANGELOG),
+  organizado por versão.
+
+### Alterado
+- **A secção da conta (nome, papel, Terminar sessão) já não fica pregada ao
+  fundo da barra lateral** — passa a aparecer logo a seguir à última opção
+  do menu, para nunca ser preciso rolar a página só para terminar a sessão.
+
+---
+
 ## [0.11.0] — 2026-09-24
 
 ### Adicionado
