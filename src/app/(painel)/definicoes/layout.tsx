@@ -32,7 +32,7 @@ export default async function LayoutDefinicoes({
 
       <SubNavDefinicoes admin={perfil.admin} />
 
-      <div className="mt-8">{children}</div>
+      <div className="mt-6 sm:mt-8">{children}</div>
     </div>
   );
 }

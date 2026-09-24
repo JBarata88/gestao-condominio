@@ -88,7 +88,7 @@ export default function SeccaoConta({
       aria-labelledby={`seccao-${conta}`}
       className="rounded-xl border border-pergaminho-200 bg-white shadow-[var(--shadow-baixo)]"
     >
-      <header className="flex flex-wrap items-baseline justify-between gap-3 border-b border-pergaminho-200 px-6 py-4">
+      <header className="flex flex-wrap items-baseline justify-between gap-3 border-b border-pergaminho-200 px-4 py-4 sm:px-6">
         <h2
           id={`seccao-${conta}`}
           className="font-display text-xl font-semibold text-verdete-900"
@@ -104,7 +104,7 @@ export default function SeccaoConta({
       </header>
 
       {visiveis.length === 0 ? (
-        <p className="px-6 py-8 text-center leading-relaxed text-pergaminho-600">
+        <p className="px-4 py-8 text-center sm:px-6 leading-relaxed text-pergaminho-600">
           {filtrado
             ? "Nenhum movimento corresponde ao filtro nesta conta."
             : "Sem movimentos neste período."}{" "}
@@ -228,7 +228,7 @@ export default function SeccaoConta({
         </div>
       )}
 
-      <footer className="flex flex-wrap items-center gap-3 border-t border-pergaminho-200 px-6 py-3">
+      <footer className="flex flex-wrap items-center gap-3 border-t border-pergaminho-200 px-4 py-3 sm:px-6">
         <Etiqueta tom="neutro">
           {visiveis.length} movimento{visiveis.length === 1 ? "" : "s"}
         </Etiqueta>

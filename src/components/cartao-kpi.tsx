@@ -39,11 +39,11 @@ export default function CartaoKpi({
 
   return (
     <article
-      className={`rounded-xl border p-5 shadow-[var(--shadow-baixo)] transition-[transform,box-shadow] duration-200 ease-[var(--ease-saida)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-medio)] ${t.cartao}`}
+      className={`rounded-xl border p-4 sm:p-5 shadow-[var(--shadow-baixo)] transition-[transform,box-shadow] duration-200 ease-[var(--ease-saida)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-medio)] ${t.cartao}`}
     >
       <p className={`text-sm ${t.rotulo}`}>{rotulo}</p>
       <p
-        className={`tabular mt-2 font-display text-3xl font-semibold tracking-[-0.03em] ${t.valor}`}
+        className={`tabular mt-2 font-display text-2xl font-semibold sm:text-3xl tracking-[-0.03em] ${t.valor}`}
       >
         {texto}
       </p>

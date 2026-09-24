@@ -25,8 +25,11 @@ export default function SubNavDefinicoes({ admin }: { admin: boolean }) {
   const abas = admin ? [...ABAS_ADMIN, ABA_CONTA] : [ABA_CONTA];
 
   return (
-    <nav aria-label="Áreas das definições" className="border-b border-pergaminho-200">
-      <ul className="-mb-px flex flex-wrap gap-1">
+    <nav
+      aria-label="Áreas das definições"
+      className="-mx-4 overflow-x-auto border-b border-pergaminho-200 px-4 sm:mx-0 sm:px-0"
+    >
+      <ul className="flex gap-1 whitespace-nowrap sm:-mb-px sm:flex-wrap">
         {abas.map((aba) => {
           const ativo = caminho.startsWith(aba.href);
           return (
@@ -34,7 +37,7 @@ export default function SubNavDefinicoes({ admin }: { admin: boolean }) {
               <Link
                 href={aba.href}
                 aria-current={ativo ? "page" : undefined}
-                className={`inline-block rounded-t-lg border-b-2 px-4 py-2.5 text-sm transition-[color,border-color,background-color] duration-150 ease-[var(--ease-saida)] ${
+                className={`inline-block rounded-t-lg border-b-2 px-3 py-3 text-sm sm:px-4 sm:py-2.5 transition-[color,border-color,background-color] duration-150 ease-[var(--ease-saida)] ${
                   ativo
                     ? "border-verdete-700 font-medium text-verdete-900"
                     : "border-transparent text-pergaminho-600 hover:border-pergaminho-300 hover:text-verdete-800"

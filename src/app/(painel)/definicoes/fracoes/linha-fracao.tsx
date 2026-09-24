@@ -91,7 +91,7 @@ export default function LinhaFracao({
           <button
             type="button"
             onClick={() => setAEditar(true)}
-            className="rounded-md px-2 py-1 text-xs text-pergaminho-600 transition-colors duration-150 hover:bg-verdete-700/8 hover:text-verdete-800"
+            className="rounded-md px-3 py-2 text-xs text-pergaminho-600 transition-colors duration-150 hover:bg-verdete-700/8 hover:text-verdete-800"
           >
             Editar
           </button>

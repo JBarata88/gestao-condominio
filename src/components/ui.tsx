@@ -17,14 +17,14 @@ export function CabecalhoPagina({
   accao?: ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4 print:mb-4">
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8 print:mb-4">
       <div>
         {sobretitulo && (
           <p className="font-display text-sm tracking-[0.2em] text-ocre-600 uppercase print:text-xs">
             {sobretitulo}
           </p>
         )}
-        <h1 className="mt-2 flex items-center gap-2 font-display text-4xl font-semibold tracking-[-0.03em] text-verdete-950 print:mt-1 print:text-2xl">
+        <h1 className="mt-2 flex items-center gap-2 font-display text-3xl font-semibold sm:text-4xl tracking-[-0.03em] text-verdete-950 print:mt-1 print:text-2xl">
           {titulo}
           {dica}
         </h1>
@@ -53,7 +53,7 @@ export function DicaInformacao({ children }: { children: ReactNode }) {
       >
         i
       </summary>
-      <div className="absolute top-full left-0 z-10 mt-2 w-72 max-w-[80vw] rounded-lg border border-pergaminho-200 bg-white p-3 text-sm leading-relaxed font-normal text-pergaminho-700 shadow-[var(--shadow-medio)]">
+      <div className="absolute top-full left-0 z-10 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-pergaminho-200 bg-white p-3 text-sm leading-relaxed font-normal text-pergaminho-700 shadow-[var(--shadow-medio)]">
         {children}
       </div>
     </details>
@@ -77,7 +77,7 @@ export function Painel({
   return (
     <section
       id={id}
-      className={`rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)] ${className}`}
+      className={`rounded-xl border border-pergaminho-200 bg-white p-4 shadow-[var(--shadow-baixo)] sm:p-6 ${className}`}
     >
       {titulo && (
         <h2 className="font-display text-xl font-semibold text-verdete-900 print:text-base">

@@ -72,7 +72,7 @@ export default function FormularioLancamento({
 
   if (!aberto) {
     return (
-      <div className="border-t border-pergaminho-200 px-6 py-4">
+      <div className="border-t border-pergaminho-200 px-4 py-4 sm:px-6">
         <Botao variante="secundario" onClick={() => setAberto(true)}>
           Lançar movimento à mão
         </Botao>
@@ -86,7 +86,7 @@ export default function FormularioLancamento({
   }
 
   return (
-    <div className="border-t border-pergaminho-200 bg-pergaminho-50/50 px-6 py-5">
+    <div className="border-t border-pergaminho-200 bg-pergaminho-50/50 px-4 py-5 sm:px-6">
       <h3 className="mb-4 font-display text-lg font-semibold text-verdete-900">
         Novo movimento de {conta === "caixa" ? "caixa" : "banco"}
       </h3>

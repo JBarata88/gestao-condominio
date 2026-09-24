@@ -27,7 +27,7 @@ export default function Navegacao({
   return (
     <>
       {/* Barra superior, só em ecrãs pequenos */}
-      <div className="flex items-center justify-between border-b border-pergaminho-200 bg-white px-4 py-3 lg:hidden print:hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-pergaminho-200 bg-white/95 px-4 py-2.5 backdrop-blur lg:hidden print:hidden">
         <span className="font-display text-base font-semibold text-verdete-900">
           Gestão de Condomínio
         </span>
@@ -36,7 +36,7 @@ export default function Navegacao({
           onClick={() => setAberto((v) => !v)}
           aria-expanded={aberto}
           aria-controls="menu-principal"
-          className="rounded-lg border border-pergaminho-300 px-3 py-1.5 text-sm text-verdete-800 transition-colors duration-150 hover:bg-pergaminho-100 active:bg-pergaminho-200"
+          className="min-h-11 rounded-lg border border-pergaminho-300 px-4 py-2 text-sm font-medium text-verdete-800 transition-colors duration-150 hover:bg-pergaminho-100 active:bg-pergaminho-200"
         >
           {aberto ? "Fechar" : "Menu"}
         </button>
@@ -71,7 +71,7 @@ export default function Navegacao({
                     href={item.href}
                     onClick={() => setAberto(false)}
                     aria-current={selecionado ? "page" : undefined}
-                    className={`block rounded-lg px-3 py-2.5 text-sm transition-[background-color,color,transform] duration-150 ease-[var(--ease-saida)] active:scale-[0.99] ${
+                    className={`block rounded-lg px-3 py-3 text-base lg:py-2.5 lg:text-sm transition-[background-color,color,transform] duration-150 ease-[var(--ease-saida)] active:scale-[0.99] ${
                       selecionado
                         ? "bg-verdete-700 font-medium text-pergaminho-50 shadow-[var(--shadow-baixo)]"
                         : "text-verdete-800 hover:bg-pergaminho-100"
@@ -95,7 +95,7 @@ export default function Navegacao({
             <form action="/auth/sair" method="post" className="mt-3">
               <button
                 type="submit"
-                className="text-sm text-pergaminho-600 underline-offset-4 transition-colors duration-150 hover:text-verdete-700 hover:underline"
+                className="-mx-1 px-1 py-2 text-sm text-pergaminho-600 underline-offset-4 transition-colors duration-150 hover:text-verdete-700 hover:underline"
               >
                 Terminar sessão
               </button>
@@ -103,7 +103,7 @@ export default function Navegacao({
             <Link
               href="/alteracoes"
               onClick={() => setAberto(false)}
-              className="mt-3 block text-xs text-pergaminho-400 underline-offset-2 transition-colors duration-150 hover:text-verdete-700 hover:underline"
+              className="mt-1 inline-block py-2 text-xs text-pergaminho-400 underline-offset-2 transition-colors duration-150 hover:text-verdete-700 hover:underline"
             >
               Versão {VERSAO} · o que mudou
             </Link>

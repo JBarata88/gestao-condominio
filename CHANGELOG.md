@@ -8,6 +8,24 @@ numeração segue o [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.1] — 2026-09-24
+
+### Alterado
+- **Melhor em telemóvel e tablet** (iPhone, iPad, Android):
+  - Os campos de formulário deixam de fazer o iPhone ampliar o ecrã sozinho
+    ao tocar neles.
+  - A barra de topo com o botão **Menu** fica fixa ao rolar a página, e as
+    opções do menu têm alvos de toque maiores.
+  - As abas de **Definições** e os meses em **Movimentos** passam a uma
+    única linha que se desliza para o lado, em vez de se amontoarem.
+  - Os filtros de **Movimentos** ocupam a largura toda no telemóvel.
+  - Margens, títulos e cartões mais compactos em ecrãs pequenos, para caber
+    mais conteúdo sem perder legibilidade.
+  - Botões **Editar** nas tabelas maiores, mais fáceis de acertar com o
+    dedo.
+
+---
+
 ## [1.0.0] — 2026-09-24
 
 Primeira versão em produção.

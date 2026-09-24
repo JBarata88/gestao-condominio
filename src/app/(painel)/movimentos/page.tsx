@@ -223,7 +223,7 @@ export default async function PaginaMovimentos({
             }
           />
 
-          <section className="rounded-xl border border-verdete-800 bg-verdete-800 px-6 py-5 shadow-[var(--shadow-medio)]">
+          <section className="rounded-xl border border-verdete-800 bg-verdete-800 px-4 py-5 shadow-[var(--shadow-medio)]">
             <div className="flex flex-wrap items-baseline justify-between gap-4">
               <h2 className="font-display text-lg font-semibold text-pergaminho-50">
                 Total das duas contas
@@ -237,7 +237,7 @@ export default async function PaginaMovimentos({
                 {euros(somar([fechoBanco, fechoCaixa]))}
               </p>
             </div>
-            <dl className="mt-4 flex flex-wrap gap-x-10 gap-y-2 text-sm text-verdete-100/80">
+            <dl className="mt-4 grid grid-cols-1 gap-x-10 gap-y-2 sm:flex sm:flex-wrap text-sm text-verdete-100/80">
               <div className="flex gap-2">
                 <dt>
                   Receitas {filtroDeConteudo ? "do que está à vista" : "do período"}

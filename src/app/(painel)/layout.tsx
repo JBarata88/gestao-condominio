@@ -59,8 +59,8 @@ export default async function LayoutPainel({
         nome={perfil.nome ?? "Utilizador"}
         papel={admin ? "Administração" : "Condómino"}
       />
-      <main className="min-w-0 px-5 py-8 sm:px-8 lg:px-10 lg:py-10 print:p-0">
-        <div className="mb-8 flex justify-end border-b border-pergaminho-200 pb-4 print:hidden">
+      <main className="min-w-0 px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10 print:p-0">
+        <div className="mb-6 flex justify-end border-b border-pergaminho-200 pb-4 sm:mb-8 print:hidden">
           <Suspense fallback={null}>
             <SeletorAno anos={anos} anoActivo={anoActivo} />
           </Suspense>

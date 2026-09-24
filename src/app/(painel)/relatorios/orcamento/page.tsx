@@ -127,12 +127,12 @@ export default async function PaginaRelatoriosOrcamento({
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 print:mt-3 print:gap-2">
-        <div className="rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)] print:border-0 print:p-2 print:shadow-none">
+        <div className="rounded-xl border border-pergaminho-200 bg-white p-4 shadow-[var(--shadow-baixo)] sm:p-6 print:border-0 print:p-2 print:shadow-none">
           <p className="text-sm text-pergaminho-600">Variação das disponibilidades</p>
           <LinhaValores linha={mapa.variacao} forte />
         </div>
 
-        <div className="rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)] print:border-0 print:p-2 print:shadow-none">
+        <div className="rounded-xl border border-pergaminho-200 bg-white p-4 shadow-[var(--shadow-baixo)] sm:p-6 print:border-0 print:p-2 print:shadow-none">
           <p className="text-sm text-pergaminho-600">Célula de controlo</p>
           <div className="mt-1 grid grid-cols-2 gap-4">
             <div>

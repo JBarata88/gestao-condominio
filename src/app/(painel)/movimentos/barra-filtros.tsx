@@ -37,11 +37,14 @@ export default function BarraFiltros({
   };
 
   const classeSelect =
-    "rounded-lg border border-pergaminho-300 bg-white px-3 py-2 text-sm text-verdete-950 transition-[border-color] duration-150 hover:border-pergaminho-400 focus:border-verdete-500 focus:outline-none";
+    "w-full rounded-lg border border-pergaminho-300 bg-white px-3 py-2 text-sm text-verdete-950 sm:w-auto transition-[border-color] duration-150 hover:border-pergaminho-400 focus:border-verdete-500 focus:outline-none";
 
   return (
     <div className="mb-6 flex flex-col gap-4">
-      <nav aria-label="Filtrar por mês" className="flex flex-wrap gap-2">
+      <nav
+        aria-label="Filtrar por mês"
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+      >
         <PastilhaMes activo={!mes} href={hrefMes(null)} rotulo="Ano inteiro" />
         {MESES.map((nome, i) => (
           <PastilhaMes
@@ -55,7 +58,7 @@ export default function BarraFiltros({
 
       <form
         method="get"
-        className="flex flex-wrap items-end gap-3 rounded-xl border border-pergaminho-200 bg-white px-4 py-3 shadow-[var(--shadow-baixo)]"
+        className="grid grid-cols-1 items-end gap-3 rounded-xl border border-pergaminho-200 bg-white px-4 py-3 shadow-[var(--shadow-baixo)] sm:flex sm:flex-wrap"
       >
         {/* O mês vem das pastilhas acima e tem de sobreviver à submissão. */}
         {mes && <input type="hidden" name="mes" value={mes} />}
@@ -109,7 +112,7 @@ export default function BarraFiltros({
 
         <button
           type="submit"
-          className="rounded-lg bg-verdete-700 px-4 py-2 text-sm font-medium text-pergaminho-50 shadow-[var(--shadow-baixo)] transition-[transform,background-color] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:bg-verdete-600 active:translate-y-0 active:bg-verdete-800"
+          className="min-h-11 rounded-lg bg-verdete-700 px-4 py-2 text-sm font-medium text-pergaminho-50 shadow-[var(--shadow-baixo)] transition-[transform,background-color] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:bg-verdete-600 active:translate-y-0 active:bg-verdete-800"
         >
           Filtrar
         </button>
@@ -117,7 +120,7 @@ export default function BarraFiltros({
         {comFiltro && (
           <a
             href={mes ? `/movimentos?mes=${mes}` : "/movimentos"}
-            className="rounded-lg px-3 py-2 text-sm text-pergaminho-600 underline-offset-4 transition-colors duration-150 hover:text-verdete-700 hover:underline"
+            className="rounded-lg px-3 py-2 text-center text-sm text-pergaminho-600 underline-offset-4 transition-colors duration-150 hover:text-verdete-700 hover:underline"
           >
             Limpar filtros
           </a>
@@ -140,7 +143,7 @@ function PastilhaMes({
     <a
       href={href}
       aria-current={activo ? "page" : undefined}
-      className={`rounded-lg border px-3 py-1.5 text-sm transition-[background-color,border-color,transform] duration-150 ease-[var(--ease-saida)] active:scale-[0.98] ${
+      className={`shrink-0 rounded-lg border px-3 py-2 text-sm transition-[background-color,border-color,transform] duration-150 ease-[var(--ease-saida)] active:scale-[0.98] ${
         activo
           ? "border-verdete-700 bg-verdete-700 font-medium text-pergaminho-50"
           : "border-pergaminho-300 bg-white text-verdete-800 hover:border-pergaminho-400 hover:bg-pergaminho-50"

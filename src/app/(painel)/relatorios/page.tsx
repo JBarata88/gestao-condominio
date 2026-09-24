@@ -192,7 +192,7 @@ export default async function PaginaRelatorios({
         </Painel>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-pergaminho-200 bg-white p-6 shadow-[var(--shadow-baixo)] print:mt-3 print:border-0 print:p-0 print:shadow-none">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-pergaminho-200 bg-white p-4 shadow-[var(--shadow-baixo)] sm:p-6 print:mt-3 print:border-0 print:p-0 print:shadow-none">
         <div>
           <p className="text-sm text-pergaminho-600">Célula de controlo</p>
           <p
