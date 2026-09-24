@@ -16,6 +16,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.115.0",
+    "@vercel/analytics": "^2.0.1",
     "date-fns": "^4.1.0",
     "docx": "^9.1.0",
     "exceljs": "^4.4.0",
