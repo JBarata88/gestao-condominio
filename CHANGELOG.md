@@ -1,13 +1,5 @@
 # Histórico de alterações
 
-Todas as alterações relevantes da aplicação, da mais recente para a mais antiga.
-A versão em uso aparece no canto inferior esquerdo, por baixo do nome da conta.
-
-O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e a
-numeração segue o [SemVer](https://semver.org/lang/pt-BR/).
-
----
-
 ## [1.0.1] — 2026-09-24
 
 ### Alterado
