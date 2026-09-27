@@ -1,5 +1,13 @@
 # Histórico de alterações
 
+## [1.0.3] — 2026-09-27
+
+### Removido
+- **Quotas**: o cartão **Total Em Falta** no topo da página. Os valores em
+  falta continuam visíveis por fração na tabela.
+
+---
+
 ## [1.0.2] — 2026-09-27
 
 ### Alterado

@@ -143,9 +143,8 @@ export default async function PaginaQuotas({
             Total de {linhas.length} fração(ões) no mapa.
           </p>
 
-          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 print:mb-4 print:gap-2">
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 print:mb-4 print:gap-2">
             <CartaoKpi rotulo="Total Pago" valor={totais.pago} />
-            <CartaoKpi rotulo="Total Em Falta" valor={totais.atrasado} />
             <CartaoKpi rotulo="Total Por Pagar" valor={totais.porPagar} />
           </div>
 
