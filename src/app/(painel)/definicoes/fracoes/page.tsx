@@ -63,7 +63,7 @@ export default async function PaginaDefinicoesFracoes({
                 Administração de {ano}
               </th>
               <th scope="col" className="px-4 py-2.5">
-                <span className="sr-only">Acções</span>
+                <span className="sr-only">Ações</span>
               </th>
             </tr>
           </thead>

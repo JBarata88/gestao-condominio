@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import {
   carregarFracoes,
   carregarMovimentos,
   carregarQuotasDoAno,
   carregarSaldosIniciais,
+  carregarSegurosDoAno,
   definicao,
   limitesDoAno,
   paraCalculo,
@@ -15,6 +17,8 @@ import {
 } from "@/lib/dados";
 import { saldosApos } from "@/lib/contas";
 import { euros } from "@/lib/formatos";
+import { temTabelaSeguros } from "@/lib/relatorios/acta-marcador";
+import type { DecisaoTopico, EstadoActa } from "@/lib/tipos-bd";
 
 export type Resultado = { ok: boolean; mensagem: string };
 
@@ -644,7 +648,7 @@ export async function abrirExercicio(
     revalidatePath("/", "layout");
     return {
       ok: true,
-      mensagem: `Exercício de ${ano} aberto. Abertura transportada: caixa ${euros(fecho.caixa)}, banco ${euros(fecho.depositoOrdem)}. Continua "futuro" até seres tu a tornar activo.`,
+      mensagem: `Exercício de ${ano} aberto. Abertura transportada: caixa ${euros(fecho.caixa)}, banco ${euros(fecho.depositoOrdem)}. Continua "futuro" até seres tu a torná-lo ativo.`,
     };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
@@ -686,7 +690,7 @@ export async function definirExercicioActivo(
     if (error) return { ok: false, mensagem: error.message };
 
     revalidatePath("/", "layout");
-    return { ok: true, mensagem: `${ano} passou a ser o exercício activo.` };
+    return { ok: true, mensagem: `${ano} passou a ser o exercício ativo.` };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
   }
@@ -720,7 +724,7 @@ export async function eliminarExercicio(
     if (ano === anoPorOmissao) {
       return {
         ok: false,
-        mensagem: `${ano} é o exercício activo. Torna outro ano activo antes de o eliminar.`,
+        mensagem: `${ano} é o exercício ativo. Torna outro ano ativo antes de o eliminar.`,
       };
     }
 
@@ -746,6 +750,300 @@ export async function eliminarExercicio(
 
     revalidatePath("/", "layout");
     return { ok: true, mensagem: `Exercício de ${ano} eliminado.` };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Actas de assembleia
+// ---------------------------------------------------------------------------
+
+/** O que o editor da acta envia, serializado num campo escondido. */
+export type ConteudoActa = {
+  numero: number;
+  data: string;
+  hora_inicio: string;
+  hora_fim: string;
+  local: string;
+  topicos: Array<{ titulo: string; decisao: DecisaoTopico | null; comentario: string }>;
+  presencas: Array<{ fracao_id: string; condomino_nome: string; forma: string }>;
+  /** Refaz a tabela de apólices já guardada na acta com os dados atuais. */
+  atualizar_seguros?: boolean;
+};
+
+const DECISOES: readonly DecisaoTopico[] = ["aprovado_unanimidade", "reprovado"];
+
+function erroActa(error: { code?: string; message: string }, n: number): Resultado {
+  return error.code === "23505"
+    ? { ok: false, mensagem: `Já existe uma ata com o número ${n}.` }
+    : { ok: false, mensagem: error.message };
+}
+
+/**
+ * Cria uma acta em rascunho, com o local e a hora da última, e abre-a no
+ * editor.
+ */
+export async function criarActa(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  let id: string;
+  try {
+    await exigirAdmin();
+    const supabase = await clienteServidor();
+
+    const n = numero(dados, "numero");
+    const data = texto(dados, "data");
+    if (n === null || n < 1 || !Number.isInteger(n)) {
+      return { ok: false, mensagem: "Indica o número da ata." };
+    }
+    if (!data || !DATA_ISO.test(data)) {
+      return { ok: false, mensagem: "Indica a data da assembleia." };
+    }
+
+    const { data: ultima } = await supabase
+      .from("actas")
+      .select("local, hora_inicio")
+      .order("numero", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const { data: nova, error } = await supabase
+      .from("actas")
+      .insert({
+        numero: n,
+        data,
+        hora_inicio: ultima?.hora_inicio ?? "11.00",
+        hora_fim: null,
+        local: ultima?.local ?? "",
+      })
+      .select("id")
+      .single();
+    if (error) return erroActa(error, n);
+    id = nova.id;
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+
+  revalidatePath("/definicoes/actas");
+  // Fora do try: o redirect funciona lançando uma excepção própria do Next.
+  redirect(`/definicoes/actas/${id}`);
+}
+
+/**
+ * Guarda a acta inteira. Tópicos e presenças são substituídos em bloco: é
+ * mais simples do que reconciliar linha a linha, e uma acta é pequena.
+ *
+ * A permilagem é copiada da fração neste momento, para a acta não mudar se a
+ * fração mudar depois.
+ */
+export async function guardarActa(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const id = texto(dados, "id");
+    const bruto = texto(dados, "conteudo");
+    if (!id || !bruto) return { ok: false, mensagem: "Ata não indicada." };
+
+    const c = JSON.parse(bruto) as ConteudoActa;
+    if (!Number.isInteger(c.numero) || c.numero < 1) {
+      return { ok: false, mensagem: "O número da ata tem de ser um inteiro positivo." };
+    }
+    if (!DATA_ISO.test(c.data)) {
+      return { ok: false, mensagem: "Indica a data da assembleia." };
+    }
+
+    const topicos = c.topicos
+      .map((t) => ({ ...t, titulo: t.titulo.trim(), comentario: t.comentario.trim() }))
+      .filter((t) => t.titulo !== "" || t.comentario !== "");
+    if (topicos.some((t) => t.titulo === "")) {
+      return { ok: false, mensagem: "Todos os tópicos precisam de um título." };
+    }
+
+    const fracoes = new Map((await carregarFracoes()).map((f) => [f.id, f]));
+    const presencas = c.presencas.filter((p) => fracoes.has(p.fracao_id));
+
+    const supabase = await clienteServidor();
+    const { error } = await supabase
+      .from("actas")
+      .update({
+        numero: c.numero,
+        data: c.data,
+        hora_inicio: c.hora_inicio.trim() || "11.00",
+        hora_fim: c.hora_fim.trim() || null,
+        local: c.local.trim(),
+        atualizado_em: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) return erroActa(error, c.numero);
+
+    const semTopicos = await supabase.from("acta_topicos").delete().eq("acta_id", id);
+    if (semTopicos.error) return { ok: false, mensagem: semTopicos.error.message };
+    if (topicos.length > 0) {
+      const { error: e } = await supabase.from("acta_topicos").insert(
+        topicos.map((t, i) => ({
+          acta_id: id,
+          ordem: i + 1,
+          titulo: t.titulo,
+          decisao: t.decisao && DECISOES.includes(t.decisao) ? t.decisao : null,
+          comentario: t.comentario,
+        })),
+      );
+      if (e) return { ok: false, mensagem: e.message };
+    }
+
+    const semPresencas = await supabase.from("acta_presencas").delete().eq("acta_id", id);
+    if (semPresencas.error) return { ok: false, mensagem: semPresencas.error.message };
+    if (presencas.length > 0) {
+      const { error: e } = await supabase.from("acta_presencas").insert(
+        presencas.map((p) => {
+          const fracao = fracoes.get(p.fracao_id)!;
+          return {
+            acta_id: id,
+            fracao_id: p.fracao_id,
+            condomino_nome:
+              p.condomino_nome.trim() || fracao.condomino_nome || `Fração ${fracao.letra}`,
+            forma: p.forma.trim() || "Presencial",
+            permilagem: fracao.permilagem,
+          };
+        }),
+      );
+      if (e) return { ok: false, mensagem: e.message };
+    }
+
+    // A tabela de apólices e recibos só existe quando algum tópico a pede. É
+    // copiada do ano da assembleia na primeira gravação e depois fica fixa,
+    // para uma acta antiga não mudar quando o registo dos seguros muda. Só é
+    // refeita se a administração o pedir.
+    const pedeTabela = topicos.some((t) => temTabelaSeguros(t.comentario));
+    const { count: jaTemTabela } = await supabase
+      .from("acta_seguros")
+      .select("fracao_id", { count: "exact", head: true })
+      .eq("acta_id", id);
+    const refazer = pedeTabela && (!jaTemTabela || c.atualizar_seguros === true);
+    if (!pedeTabela || refazer) {
+      const semSeguros = await supabase.from("acta_seguros").delete().eq("acta_id", id);
+      if (semSeguros.error) return { ok: false, mensagem: semSeguros.error.message };
+    }
+    if (refazer) {
+      const seguros = await carregarSegurosDoAno(Number(c.data.slice(0, 4)));
+      const { error: e } = await supabase.from("acta_seguros").insert(
+        [...fracoes.values()]
+          .filter((f) => f.ativo)
+          .map((f) => ({
+            acta_id: id,
+            fracao_id: f.id,
+            condomino_nome: f.condomino_nome ?? `Fração ${f.letra}`,
+            apolice: seguros.get(f.id)?.apolice ?? false,
+            recibo: seguros.get(f.id)?.recibo ?? false,
+          })),
+      );
+      if (e) return { ok: false, mensagem: e.message };
+    }
+
+    revalidatePath("/definicoes/actas", "layout");
+    revalidatePath("/actas", "layout");
+    return { ok: true, mensagem: `Ata n.º ${c.numero} guardada.` };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+/** Publica a acta (os condóminos passam a vê-la) ou volta a pô-la em rascunho. */
+export async function mudarEstadoActa(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const id = texto(dados, "id");
+    const estado = texto(dados, "estado") as EstadoActa | null;
+    if (!id || (estado !== "rascunho" && estado !== "publicada")) {
+      return { ok: false, mensagem: "Pedido inválido." };
+    }
+
+    const supabase = await clienteServidor();
+    const { error } = await supabase
+      .from("actas")
+      .update({ estado, atualizado_em: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return { ok: false, mensagem: error.message };
+
+    revalidatePath("/definicoes/actas", "layout");
+    revalidatePath("/actas", "layout");
+    return {
+      ok: true,
+      mensagem:
+        estado === "publicada"
+          ? "Ata publicada: os condóminos já a podem consultar."
+          : "Ata de volta a rascunho: os condóminos deixam de a ver.",
+    };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+}
+
+export async function apagarActa(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const id = texto(dados, "id");
+    if (!id) return { ok: false, mensagem: "Ata não indicada." };
+
+    const supabase = await clienteServidor();
+    const { error } = await supabase.from("actas").delete().eq("id", id);
+    if (error) return { ok: false, mensagem: error.message };
+  } catch (e) {
+    return { ok: false, mensagem: (e as Error).message };
+  }
+
+  revalidatePath("/definicoes/actas", "layout");
+  revalidatePath("/actas", "layout");
+  redirect("/definicoes/actas");
+}
+
+// ---------------------------------------------------------------------------
+// Apólices e recibos do seguro de habitação
+// ---------------------------------------------------------------------------
+
+/**
+ * Grava, para o ano, que frações entregaram a cópia da apólice e o recibo.
+ * O formulário tem uma linha por fração ativa (campo "fracao"), com as caixas
+ * "apolice-{id}" e "recibo-{id}" — uma caixa desmarcada não é enviada.
+ */
+export async function guardarSegurosDoAno(
+  _anterior: Resultado | null,
+  dados: FormData,
+): Promise<Resultado> {
+  try {
+    await exigirAdmin();
+    const ano = numero(dados, "ano");
+    if (ano === null || !Number.isInteger(ano) || ano < 1900 || ano > 2200) {
+      return { ok: false, mensagem: "Ano inválido." };
+    }
+
+    const fracoes = dados.getAll("fracao").filter((v): v is string => typeof v === "string");
+    const agora = new Date().toISOString();
+    const supabase = await clienteServidor();
+    const { error } = await supabase.from("seguros_fracao").upsert(
+      fracoes.map((fracaoId) => ({
+        fracao_id: fracaoId,
+        ano,
+        apolice: dados.get(`apolice-${fracaoId}`) !== null,
+        recibo: dados.get(`recibo-${fracaoId}`) !== null,
+        atualizado_em: agora,
+      })),
+      { onConflict: "fracao_id,ano" },
+    );
+    if (error) return { ok: false, mensagem: error.message };
+
+    revalidatePath("/definicoes/seguros");
+    return { ok: true, mensagem: `Apólices e recibos de ${ano} guardados.` };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
   }

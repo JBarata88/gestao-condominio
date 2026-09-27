@@ -270,7 +270,7 @@ export default function FormularioRecibos({
             {semNome > 0 && (
               <p className="mb-3 text-sm text-ocre-700">
                 {semNome} fração(ões) sem nome de condómino. Preenche em
-                Definições para poderem ser seleccionadas.
+                Definições para poderem ser selecionadas.
               </p>
             )}
             <div className="grid gap-2 sm:grid-cols-2">

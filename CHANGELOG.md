@@ -1,5 +1,39 @@
 # Histórico de alterações
 
+## [1.1.0] — 2026-09-27
+
+### Adicionado
+- **Assembleia de Condóminos** — atas das assembleias.
+  - Em **Definições › Assembleia de Condóminos** a administração cria cada ata: número, data,
+    horas e local, os tópicos da ordem de trabalhos com a decisão de cada um
+    (**Aprovado por unanimidade** ou **Reprovado**, ou sem votação) e os
+    comentários, e os condóminos presentes com a forma de presença
+    (presencial ou por procuração).
+  - A tabela dos presentes mostra a **permilagem** de cada fração.
+  - A ata fica em rascunho até ser **publicada**. Depois disso, todos os
+    condóminos a podem ler na nova secção **Assembleia de Condóminos** do menu.
+  - Botão **Descarregar Word** que gera a ata com a mesma estrutura das
+    atas em papel, incluindo a folha de assinaturas.
+  - Cada assembleia criada com **Nova Assembleia** tem um botão **Gerar
+    convocatórias**: um Word com uma convocatória por condómino, com a data,
+    a hora, o local, a ordem de trabalhos e a segunda convocação.
+  - Botão **Gerar folha de presenças**: um Word com todas as frações, a
+    permilagem de cada uma e espaço para as assinaturas, para levar para a
+    assembleia.
+- **Apólices e recibos dos seguros de habitação.**
+  - Nova área em **Definições › Apólices e recibos** onde a administração
+    marca, por ano, que frações já entregaram a cópia da apólice e o recibo.
+  - Num tópico da ata, o botão **Inserir tabela de apólices** acrescenta a
+    tabela destas entregas ao texto, como no ponto 2 da Ata n.º 35.
+
+### Alterado
+- **Ortografia revista** em toda a aplicação e nos documentos gerados,
+  segundo o Acordo Ortográfico de 1990: ativo, atualizar, selecionar,
+  fração, ata, etc. Corrigidos também alguns acentos e concordâncias nos
+  recibos e nos mapas em Excel.
+
+---
+
 ## [1.0.5] — 2026-09-27
 
 ### Corrigido
@@ -107,7 +141,7 @@ Primeira versão em produção.
     exercício**, feita em **Definições → Frações**, sem dar nenhum acesso
     extra — aparece só como informação em **Painel**, **Quotas** e
     **Relatórios**. As frações já marcadas ficam associadas ao exercício
-    activo.
+    ativo.
 - **Definições → Frações** passa a ser uma tabela com todas as frações, com
   um botão **Editar** por linha que abre os campos — em vez de um formulário
   sempre aberto por fração.
@@ -178,8 +212,8 @@ Primeira versão em produção.
 
 ### Removido
 - Campo **"Ano do exercício por omissão"** em Prazos e exercício — trocar o
-  exercício activo faz-se agora só pela tabela de Exercícios, com "Tornar
-  activo".
+  exercício ativo faz-se agora só pela tabela de Exercícios, com "Tornar
+  ativo".
 
 ### Adicionado
 - Botão **"Criar exercício de {ano}"** junto à tabela de Exercícios: cria
@@ -188,7 +222,7 @@ Primeira versão em produção.
   ano no seletor do topo.
 - Botão **"Eliminar exercícios sem movimentos"**, com confirmação, que apaga
   de uma vez todos os exercícios futuros e passados sem movimentos lançados
-  — nunca o activo, nunca um com movimentos. Só aparece quando há pelo menos
+  — nunca o ativo, nunca um com movimentos. Só aparece quando há pelo menos
   um para eliminar.
 
 ---
@@ -197,22 +231,22 @@ Primeira versão em produção.
 
 ### Adicionado
 - **Definições → Condomínio → Exercícios** ganha um estado por linha —
-  **activo**, **futuro** ou **inactivo** — em vez de só "activo"/"sem
-  abertura". O ano a seguir ao activo (ex.: 2027) aparece sempre na tabela
+  **ativo**, **futuro** ou **inativo** — em vez de só "ativo"/"sem
+  abertura". O ano a seguir ao ativo (ex.: 2027) aparece sempre na tabela
   como "futuro", mesmo sem dados, para se poder preparar com antecedência.
   - Botão **"Abrir"** por linha, para qualquer exercício sem saldos de
     abertura (não só o que está a ser consultado no seletor do topo) —
     transporta o fecho do ano anterior e as quotas em vigor.
-  - Botão **"Tornar activo"**, para escolher qual o exercício por omissão
+  - Botão **"Tornar ativo"**, para escolher qual o exercício por omissão
     directamente na tabela, sem teres de editar o campo "Ano do exercício
     por omissão" à parte.
   - Ligação **"Editar"** por linha, que leva ao formulário de saldos de
-    abertura já com esse ano seleccionado.
+    abertura já com esse ano selecionado.
 
 ### Alterado
-- **Abrir um exercício deixa de o tornar activo sozinho.** Antes, abrir o
+- **Abrir um exercício deixa de o tornar ativo sozinho.** Antes, abrir o
   exercício seguinte trocava logo o que toda a gente via por omissão; agora
-  fica "futuro" até se escolher "Tornar activo" — dá para preparar o ano
+  fica "futuro" até se escolher "Tornar ativo" — dá para preparar o ano
   novo com antecedência sem afectar ninguém.
 
 ---
@@ -356,9 +390,9 @@ Primeira versão em produção.
 ### Alterado
 - A tabela de exercícios em Definições passa a mostrar **todos** os anos que
   existem (com saldos de abertura, com movimentos ou com quotas por ano) mais o
-  exercício activo, mesmo que ainda esteja vazio — antes só aparecia quem já
+  exercício ativo, mesmo que ainda esteja vazio — antes só aparecia quem já
   tinha saldos de abertura. O ano em "Ano do exercício por omissão" está
-  assinalado como **activo**; os anos sem saldos aparecem como "sem abertura".
+  assinalado como **ativo**; os anos sem saldos aparecem como "sem abertura".
 
 ---
 
@@ -371,7 +405,7 @@ Primeira versão em produção.
     Eliminar apaga os saldos de abertura e as quotas desse ano; os movimentos
     nunca são apagados por aqui.
   - Um exercício não pode ser eliminado se tiver movimentos lançados (é preciso
-    apagá-los primeiro) ou se for o exercício activo (muda-se primeiro o "Ano do
+    apagá-los primeiro) ou se for o exercício ativo (muda-se primeiro o "Ano do
     exercício por omissão"). Nesses casos aparece o motivo em vez do botão.
 
 ---
@@ -399,7 +433,7 @@ Primeira versão em produção.
   copia as quotas em vigor e passa a considerar esse ano o exercício em curso.
 
 ### Alterado
-- Painel: num ano que não seja o civil em curso, o bloco mensal mostra Dezembro
+- Painel: num ano que não seja o civil em curso, o bloco mensal mostra dezembro
   (o fecho do exercício) em vez do mês corrente.
 - Removido o painel **"Registar pagamento"** da página de Quotas. Os pagamentos
   continuam a lançar-se em **Movimentos**.

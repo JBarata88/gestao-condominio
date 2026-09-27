@@ -125,7 +125,7 @@ export async function atualizarConta(
     if (error) return { ok: false, mensagem: error.message };
 
     revalidatePath("/definicoes", "layout");
-    return { ok: true, mensagem: "Conta actualizada." };
+    return { ok: true, mensagem: "Conta atualizada." };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
   }

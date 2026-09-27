@@ -139,7 +139,7 @@ export default function SeccaoConta({
                 </th>
                 {podeGerir && (
                   <th scope="col" className="px-4 py-2.5 text-right font-medium text-verdete-800">
-                    <span className="sr-only">Acções</span>
+                    <span className="sr-only">Ações</span>
                   </th>
                 )}
               </tr>

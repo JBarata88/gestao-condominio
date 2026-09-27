@@ -139,7 +139,7 @@ function corpoQuota(
     ...cabecalho(c, nomeParaRecibo(c)),
     p("RECIBO", { negrito: true, tamanho: 14, espacoDepois: 240 }),
     p(
-      `Recebemos ${tratamentoDe(r.condomino)} ${r.condomino.nome} fracção ${r.condomino.letra} andar ${r.condomino.andar} a quantia de ${extenso}.`,
+      `Recebemos ${tratamentoDe(r.condomino)} ${r.condomino.nome} fração ${r.condomino.letra} andar ${r.condomino.andar} a quantia de ${extenso}.`,
       { espacoDepois: 120 },
     ),
     p(`${rotulo} ${listaMeses} DE ${r.ano}.`, { espacoDepois: 360 }),
@@ -166,7 +166,7 @@ function corpoPresenca(
     ...cabecalho(c, nomeParaRecibo(c)),
     p("RECIBO", { negrito: true, tamanho: 14, espacoDepois: 240 }),
     p(
-      `Eu abaixo assinado, ${r.condomino.nome} fracção ${r.condomino.letra} andar ${r.condomino.andar} declaro que recebi a quantia de ${extenso}, relativo à presença na assembleia de condóminos realizada no dia ${dataAssembleia}.`,
+      `Eu, abaixo ${r.condomino.tratamento === "feminino" ? "assinada" : "assinado"}, ${r.condomino.nome} fração ${r.condomino.letra} andar ${r.condomino.andar} declaro que recebi a quantia de ${extenso}, relativa à presença na assembleia de condóminos realizada no dia ${dataAssembleia}.`,
       { espacoDepois: 360 },
     ),
     p(localidade),

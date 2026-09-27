@@ -125,7 +125,7 @@ export default async function PaginaRelatorios({
             type="submit"
             className="rounded-lg border border-pergaminho-300 bg-white px-5 py-2.5 text-sm font-medium text-verdete-800 transition-[transform,border-color] duration-200 ease-[var(--ease-mola)] hover:-translate-y-0.5 hover:border-pergaminho-400 active:translate-y-0"
           >
-            Actualizar
+            Atualizar
           </button>
         </form>
       </Painel>
@@ -140,7 +140,7 @@ export default async function PaginaRelatorios({
         >
           <dl className="flex flex-col gap-2 text-sm print:gap-1 print:text-xs">
             <Linha rotulo="Administração anterior" valor={mapa.origem.anterior.total} />
-            <Linha rotulo="Administração actual" valor={mapa.origem.atual.subtotal} />
+            <Linha rotulo="Administração atual" valor={mapa.origem.atual.subtotal} />
             <Linha rotulo="Total" valor={mapa.origem.total} forte />
           </dl>
         </Painel>

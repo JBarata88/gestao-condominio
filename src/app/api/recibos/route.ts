@@ -200,7 +200,7 @@ export async function POST(pedido: NextRequest) {
       return NextResponse.json(
         {
           erro:
-            "Selecciona pelo menos uma fração com o nome do condómino preenchido.",
+            "Seleciona pelo menos uma fração com o nome do condómino preenchido.",
         },
         { status: 400 },
       );

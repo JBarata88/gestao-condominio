@@ -59,7 +59,7 @@ function CamposFornecedor({ fornecedor }: { fornecedor?: Fornecedor }) {
         nome="tipo"
         etiqueta="Tipo"
         valor={fornecedor?.tipo}
-        dica="Por exemplo: limpeza, seguros, electricidade."
+        dica="Por exemplo: limpeza, seguros, eletricidade."
       />
       <Campo nome="email" etiqueta="Email" tipo="email" valor={fornecedor?.email} />
       <Campo nome="telefone" etiqueta="Telefone" valor={fornecedor?.telefone} />

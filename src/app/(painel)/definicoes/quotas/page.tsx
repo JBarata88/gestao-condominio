@@ -81,7 +81,7 @@ export default async function PaginaDefinicoesQuotas() {
                         </span>
                         {!f.ativo && (
                           <span className="ml-2 text-xs font-normal text-pergaminho-400">
-                            (inactiva)
+                            (inativa)
                           </span>
                         )}
                       </th>

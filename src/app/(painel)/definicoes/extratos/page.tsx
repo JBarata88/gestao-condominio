@@ -24,7 +24,7 @@ export default async function PaginaDefinicoesExtratos() {
     <div className="flex flex-col gap-6">
       <p className="leading-relaxed text-pergaminho-600">
         Carrega o extrato e revê as sugestões antes de gravar. Movimentos já
-        importados são detectados e marcados como repetidos.
+        importados são detetados e marcados como repetidos.
       </p>
 
       <Painel titulo="Novo extrato">

@@ -201,6 +201,54 @@ export type Assembleia = {
   valor_presenca: number;
 };
 
+export type EstadoActa = "rascunho" | "publicada";
+export type DecisaoTopico = "aprovado_unanimidade" | "reprovado";
+
+export type Acta = {
+  id: string;
+  numero: number;
+  data: string;
+  hora_inicio: string;
+  hora_fim: string | null;
+  local: string;
+  estado: EstadoActa;
+  criado_em: string;
+  atualizado_em: string;
+};
+
+export type ActaTopico = {
+  id: string;
+  acta_id: string;
+  ordem: number;
+  titulo: string;
+  decisao: DecisaoTopico | null;
+  comentario: string;
+};
+
+export type ActaPresenca = {
+  acta_id: string;
+  fracao_id: string;
+  condomino_nome: string;
+  forma: string;
+  permilagem: number | null;
+};
+
+export type SeguroFracao = {
+  fracao_id: string;
+  ano: number;
+  apolice: boolean;
+  recibo: boolean;
+  atualizado_em: string;
+};
+
+export type ActaSeguro = {
+  acta_id: string;
+  fracao_id: string;
+  condomino_nome: string;
+  apolice: boolean;
+  recibo: boolean;
+};
+
 export type Recibo = {
   id: string;
   numero: string;
@@ -307,6 +355,11 @@ export type BaseDados = {
       extrato_linhas: Tabela<ExtratoLinha>;
       regras_conciliacao: Tabela<RegraConciliacao>;
       assembleias: Tabela<Assembleia>;
+      actas: Tabela<Acta>;
+      acta_topicos: Tabela<ActaTopico>;
+      acta_presencas: Tabela<ActaPresenca>;
+      seguros_fracao: Tabela<SeguroFracao>;
+      acta_seguros: Tabela<ActaSeguro>;
       recibos: Tabela<Recibo>;
       definicoes: Tabela<Definicao>;
     };

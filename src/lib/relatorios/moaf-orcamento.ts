@@ -124,7 +124,7 @@ export async function gerarMoafOrcamento({
   });
   texto("A4", `CONTRIBUINTE:${condominio.nif}`, { negrito: true, italico: true });
 
-  texto("C6", `MAPA DE ORIGEM E APLICAÇÃO DE FUNDOS VS.ORÇAMENTO ANO ${ano}`, {
+  texto("C6", `MAPA DE ORIGEM E APLICAÇÃO DE FUNDOS VS. ORÇAMENTO ANO ${ano}`, {
     negrito: true,
   });
 
@@ -133,7 +133,7 @@ export async function gerarMoafOrcamento({
   texto("G9", "DESVIO VALOR", { negrito: true });
   texto("H9", "DESVIO", { negrito: true });
 
-  texto("A10", `EXERCICIO DE : ${dataCurta(inicio)} a ${dataCurta(fim)}`, { negrito: true });
+  texto("A10", `EXERCÍCIO DE: ${dataCurta(inicio)} a ${dataCurta(fim)}`, { negrito: true });
   texto("E10", "EUROS", { negrito: true });
   texto("F10", "EUROS", { negrito: true });
   texto("G10", "EUROS", { negrito: true });
@@ -144,7 +144,7 @@ export async function gerarMoafOrcamento({
   texto("A15", "   A- Administração anterior", { bordaEsquerda: true });
 
   let linha = 16;
-  const RUBRICAS = ["Caixa", "Depósitos à ordem", "Depósitos a prazo/Certificados de aforro", "Conta poupança - condominio"];
+  const RUBRICAS = ["Caixa", "Depósitos à ordem", "Depósitos a prazo/Certificados de aforro", "Conta poupança - condomínio"];
   for (let i = 0; i < mapa.origem.anterior.length; i++) {
     texto(`B${linha}`, RUBRICAS[i]);
     linhaValores(linha, mapa.origem.anterior[i]);
@@ -156,7 +156,7 @@ export async function gerarMoafOrcamento({
   linhaValores(subtotalAnterior, mapa.origem.anteriorSubtotal, true);
 
   const tituloActual = subtotalAnterior + 3;
-  texto(`A${tituloActual}`, "  B- Administração actual", { bordaEsquerda: true });
+  texto(`A${tituloActual}`, "  B- Administração atual", { bordaEsquerda: true });
 
   linha = tituloActual + 1;
   for (const item of mapa.origem.atual) {

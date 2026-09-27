@@ -65,7 +65,7 @@ function lerIntervaloQuota(
   if (!fracaoId) {
     return {
       ok: false,
-      mensagem: "Escolheste um mês de quota mas não indicaste a fração.",
+      mensagem: "Escolheste um mês de quota, mas não indicaste a fração.",
     };
   }
   if (quotaMesFim) {
@@ -103,7 +103,7 @@ function lerReforco(
   if (!fracaoId) {
     return {
       ok: false,
-      mensagem: "Escolheste um reforço mas não indicaste a fração.",
+      mensagem: "Escolheste um reforço, mas não indicaste a fração.",
     };
   }
   return { ok: true, reforcoId };
@@ -246,7 +246,7 @@ export async function editarMovimento(
     revalidatePath("/quotas");
     revalidatePath("/");
 
-    return { ok: true, mensagem: "Movimento actualizado." };
+    return { ok: true, mensagem: "Movimento atualizado." };
   } catch (e) {
     return { ok: false, mensagem: (e as Error).message };
   }

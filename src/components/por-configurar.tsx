@@ -4,7 +4,7 @@
  */
 export default function PorConfigurar() {
   const passos = [
-    "Cria um projecto em supabase.com e abre Definições > API.",
+    "Cria um projeto em supabase.com e abre Definições > API.",
     "Copia o ficheiro .env.example para .env.local.",
     "Preenche NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.",
     "Aplica as migrações de supabase/migrations/ à base de dados.",

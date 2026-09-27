@@ -131,16 +131,16 @@ export default async function PaginaDefinicoesCondominio({
                 Exercícios
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-pergaminho-600">
-                Todos os anos com dados, mais o exercício activo. O ano
-                <span className="text-ocre-600"> activo</span> é o que toda a
+                Todos os anos com dados, mais o exercício ativo. O ano
+                <span className="text-ocre-600"> ativo</span> é o que toda a
                 gente vê por omissão; um ano criado a seguir a esse, ainda por
                 activar, aparece como{" "}
                 <span className="text-verdete-600">futuro</span>; todos os
                 outros ficam
-                <span className="text-pergaminho-500"> inactivos</span>. Um
+                <span className="text-pergaminho-500"> inativos</span>. Um
                 exercício sem saldos de abertura só se pode abrir; um
                 exercício só se pode eliminar se não tiver movimentos e não
-                for o activo. Eliminar apaga os saldos de abertura e as
+                for o ativo. Eliminar apaga os saldos de abertura e as
                 quotas desse ano; os movimentos nunca são apagados aqui.
               </p>
             </div>
@@ -170,19 +170,19 @@ export default async function PaginaDefinicoesCondominio({
                   </tr>
                 ) : (
                   exercicios.map((e) => {
-                    const estado: "activo" | "futuro" | "inactivo" = e.ativo
-                      ? "activo"
+                    const estado: "ativo" | "futuro" | "inativo" = e.ativo
+                      ? "ativo"
                       : e.ano > anoPorOmissao
                         ? "futuro"
-                        : "inactivo";
+                        : "inativo";
                     const ESTADO_COR: Record<typeof estado, string> = {
-                      activo: "text-ocre-600",
+                      ativo: "text-ocre-600",
                       futuro: "text-verdete-600",
-                      inactivo: "text-pergaminho-400",
+                      inativo: "text-pergaminho-400",
                     };
                     const bloqueadoEliminar = e.ativo || e.movimentos > 0;
                     const motivoEliminar = e.ativo
-                      ? "Exercício activo"
+                      ? "Exercício ativo"
                       : `${e.movimentos} movimento(s)`;
 
                     return (
@@ -241,7 +241,7 @@ export default async function PaginaDefinicoesCondominio({
       {!saldosDefinidos && (
         <Painel
           titulo={`Abrir o exercício de ${ano}`}
-          descricao={`Ainda não há saldos de abertura para ${ano}. A app calcula os saldos de caixa e banco no fim de ${ano - 1} e usa-os como abertura deste ano, e transporta as quotas em vigor. Fica marcado como "futuro" até escolheres "Tornar activo" na tabela acima.`}
+          descricao={`Ainda não há saldos de abertura para ${ano}. A app calcula os saldos de caixa e banco no fim de ${ano - 1} e usa-os como abertura deste ano, e transporta as quotas em vigor. Fica marcado como "futuro" até escolheres "Tornar ativo" na tabela acima.`}
         >
           <FormularioAccao
             accao={abrirExercicio}

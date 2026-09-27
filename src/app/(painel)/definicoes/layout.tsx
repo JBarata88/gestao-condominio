@@ -25,7 +25,7 @@ export default async function LayoutDefinicoes({
         titulo="Definições"
         descricao={
           perfil.admin
-            ? "Dados do condomínio, prazos, frações, fornecedores e importação de extratos bancários."
+            ? "Dados do condomínio, prazos, frações, apólices e recibos, atas das assembleias, fornecedores e importação de extratos bancários."
             : "Só a administração acede às restantes áreas. Aqui podes alterar a tua palavra-passe."
         }
       />

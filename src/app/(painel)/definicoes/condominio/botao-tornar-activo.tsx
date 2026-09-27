@@ -12,7 +12,7 @@ function Submeter() {
       disabled={pending}
       className="text-sm text-pergaminho-500 underline-offset-4 transition-colors duration-150 hover:text-verdete-700 hover:underline disabled:opacity-60"
     >
-      {pending ? "A activar…" : "Tornar activo"}
+      {pending ? "A ativar…" : "Tornar ativo"}
     </button>
   );
 }

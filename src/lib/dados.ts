@@ -4,6 +4,10 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { clienteServidor } from "./supabase/servidor";
 import type {
+  Acta,
+  ActaPresenca,
+  ActaSeguro,
+  ActaTopico,
   Categoria,
   Condominio,
   Definicao,
@@ -12,6 +16,7 @@ import type {
   Perfil,
   Reforco,
   SaldosIniciais,
+  SeguroFracao,
 } from "./tipos-bd";
 import type { MovimentoCalculo, SaldosAbertura } from "./contas";
 import { ABERTURA_VAZIA } from "./contas";
@@ -525,3 +530,102 @@ export function paraCalculo(
 export function limitesDoAno(ano: number): [string, string] {
   return [`${ano}-01-01`, `${ano}-12-31`];
 }
+
+/**
+ * Actas de assembleia, da mais recente para a mais antiga. A RLS já filtra:
+ * um condómino recebe só as publicadas, a administração recebe todas.
+ */
+export const carregarActas = cache(async (): Promise<Acta[]> => {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("actas")
+    .select("*")
+    .order("numero", { ascending: false });
+  return data ?? [];
+});
+
+export type PresencaActa = ActaPresenca & {
+  letra: string;
+  andar: string;
+  ordemFracao: number;
+};
+
+export type SeguroActa = ActaSeguro & { letra: string; andar: string };
+
+export type ActaCompleta = {
+  acta: Acta;
+  topicos: ActaTopico[];
+  presencas: PresencaActa[];
+  /** A tabela de apólices e recibos copiada para a acta (vazia se não tiver). */
+  seguros: SeguroActa[];
+};
+
+/** Uma acta com os tópicos por ordem e os presentes pela ordem das frações. */
+export const carregarActa = cache(
+  async (id: string): Promise<ActaCompleta | null> => {
+    const supabase = await clienteServidor();
+    const { data: acta } = await supabase
+      .from("actas")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (!acta) return null;
+
+    const [{ data: topicos }, { data: presencas }, { data: seguros }] = await Promise.all([
+      supabase
+        .from("acta_topicos")
+        .select("*")
+        .eq("acta_id", id)
+        .order("ordem", { ascending: true }),
+      supabase
+        .from("acta_presencas")
+        .select("*, fracoes(letra, andar, ordem)")
+        .eq("acta_id", id),
+      supabase
+        .from("acta_seguros")
+        .select("*, fracoes(letra, andar, ordem)")
+        .eq("acta_id", id),
+    ]);
+
+    type ComFracao<T> = T & {
+      fracoes: Pick<Fracao, "letra" | "andar" | "ordem"> | null;
+    };
+    type LinhaPresenca = ComFracao<ActaPresenca>;
+
+    return {
+      acta,
+      topicos: topicos ?? [],
+      seguros: ((seguros ?? []) as unknown as ComFracao<ActaSeguro>[])
+        .sort((a, b) => (a.fracoes?.ordem ?? 0) - (b.fracoes?.ordem ?? 0))
+        .map(({ fracoes, ...s }) => ({
+          ...s,
+          letra: fracoes?.letra ?? "?",
+          andar: fracoes?.andar ?? "",
+        })),
+      presencas: ((presencas ?? []) as unknown as LinhaPresenca[])
+        .map(({ fracoes, ...p }) => ({
+          ...p,
+          permilagem: p.permilagem === null ? null : Number(p.permilagem),
+          letra: fracoes?.letra ?? "?",
+          andar: fracoes?.andar ?? "",
+          ordemFracao: fracoes?.ordem ?? 0,
+        }))
+        .sort((a, b) => a.ordemFracao - b.ordemFracao),
+    };
+  },
+);
+
+/**
+ * Apólices e recibos entregues em cada fração no ano, por fração. Uma fração
+ * sem registo conta como nada entregue.
+ */
+export const carregarSegurosDoAno = cache(
+  async (ano: number): Promise<Map<string, Pick<SeguroFracao, "apolice" | "recibo">>> => {
+    const supabase = await clienteServidor();
+    const { data } = await supabase
+      .from("seguros_fracao")
+      .select("fracao_id, apolice, recibo")
+      .eq("ano", ano);
+    return new Map((data ?? []).map((s) => [s.fracao_id, { apolice: s.apolice, recibo: s.recibo }]));
+  },
+);

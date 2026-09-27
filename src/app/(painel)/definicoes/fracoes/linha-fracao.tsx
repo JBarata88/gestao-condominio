@@ -75,9 +75,9 @@ export default function LinhaFracao({
         </td>
         <td className="px-4 py-2.5">
           {fracao.ativo ? (
-            <span className="text-[#2f5c3b]">Activa</span>
+            <span className="text-[#2f5c3b]">Ativa</span>
           ) : (
-            <span className="text-pergaminho-400">Inactiva</span>
+            <span className="text-pergaminho-400">Inativa</span>
           )}
         </td>
         <td className="px-4 py-2.5">
@@ -145,7 +145,7 @@ export default function LinhaFracao({
                 defaultChecked={fracao.ativo}
                 className="size-4 accent-[#274a43]"
               />
-              Fração activa
+              Fração ativa
             </label>
 
             <label className="flex items-start gap-3 self-end rounded-lg border border-pergaminho-200 bg-pergaminho-50 p-3 text-sm text-verdete-800">

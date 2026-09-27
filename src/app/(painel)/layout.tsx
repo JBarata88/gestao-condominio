@@ -25,6 +25,7 @@ const ITENS_ADMIN: ItemNavegacao[] = [
   { href: "/quotas", rotulo: "Quotas" },
   { href: "/relatorios", rotulo: "Relatórios" },
   { href: "/recibos", rotulo: "Recibos" },
+  { href: "/actas", rotulo: "Assembleia de Condóminos" },
   { href: "/definicoes", rotulo: "Definições" },
 ];
 
@@ -33,6 +34,7 @@ const ITENS_CONDOMINO: ItemNavegacao[] = [
   { href: "/movimentos", rotulo: "Movimentos" },
   { href: "/quotas", rotulo: "Quotas" },
   { href: "/relatorios", rotulo: "Relatórios" },
+  { href: "/actas", rotulo: "Assembleia de Condóminos" },
   { href: "/definicoes", rotulo: "Definições" },
 ];
 

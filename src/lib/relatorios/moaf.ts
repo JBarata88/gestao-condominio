@@ -131,7 +131,7 @@ export async function gerarMoaf({
 
   texto("C6", "MAPA DE ORIGEM E APLICAÇÃO DE FUNDOS", { negrito: true });
 
-  texto("A8", "  EXERCICIO DE :", { negrito: true, bordaEsquerda: true });
+  texto("A8", "  EXERCÍCIO DE:", { negrito: true, bordaEsquerda: true });
   texto("C8", `${dataCurta(inicio)} a ${dataCurta(fim)}`, { negrito: true });
   texto("G8", "EUROS", { negrito: true, centroContinuo: true });
 
@@ -145,13 +145,13 @@ export async function gerarMoaf({
   valor("G15", mapa.origem.anterior.depositoOrdem);
   texto("B16", "Depósitos a prazo");
   valor("G16", mapa.origem.anterior.depositoPrazo);
-  texto("B17", "Conta poupança - condominio");
+  texto("B17", "Conta poupança - condomínio");
   valor("G17", mapa.origem.anterior.contaPoupanca);
 
   texto("D19", "SUB-TOTAL", { negrito: true });
   valor("G19", mapa.origem.anterior.total, true);
 
-  texto("A22", "  B- Administração actual", { bordaEsquerda: true });
+  texto("A22", "  B- Administração atual", { bordaEsquerda: true });
 
   // As receitas começam na linha 23, como no ficheiro original.
   let linha = 23;
@@ -204,7 +204,7 @@ export async function gerarMoaf({
   valor(`G${tituloDisponibilidades + 2}`, d.depositoOrdem);
   texto(`B${tituloDisponibilidades + 3}`, "Depósitos a prazo");
   valor(`G${tituloDisponibilidades + 3}`, d.depositoPrazo);
-  texto(`B${tituloDisponibilidades + 4}`, "Conta poupança - condominio");
+  texto(`B${tituloDisponibilidades + 4}`, "Conta poupança - condomínio");
   valor(`G${tituloDisponibilidades + 4}`, d.contaPoupanca);
 
   const subtotalDisponibilidades = tituloDisponibilidades + 6;

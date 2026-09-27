@@ -60,7 +60,7 @@ const RUBRICAS_ANTERIOR = [
   { chave: "caixa", rotulo: "Caixa" },
   { chave: "depositoOrdem", rotulo: "Depósitos à ordem" },
   { chave: "depositoPrazo", rotulo: "Depósitos a prazo/Certificados de aforro" },
-  { chave: "contaPoupanca", rotulo: "Conta poupança - condominio" },
+  { chave: "contaPoupanca", rotulo: "Conta poupança - condomínio" },
 ] as const;
 
 export function construirMapaOrcamento({

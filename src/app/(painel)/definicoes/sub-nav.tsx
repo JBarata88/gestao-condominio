@@ -6,8 +6,10 @@ import { usePathname } from "next/navigation";
 const ABAS_ADMIN = [
   { href: "/definicoes/condominio", rotulo: "Condomínio" },
   { href: "/definicoes/fracoes", rotulo: "Frações" },
+  { href: "/definicoes/seguros", rotulo: "Apólices e recibos" },
   { href: "/definicoes/quotas", rotulo: "Quotas do ano" },
   { href: "/definicoes/orcamento", rotulo: "Orçamento" },
+  { href: "/definicoes/actas", rotulo: "Assembleia de Condóminos" },
   { href: "/definicoes/contas", rotulo: "Contas" },
   { href: "/definicoes/fornecedores", rotulo: "Fornecedores" },
   { href: "/definicoes/extratos", rotulo: "Extratos bancários" },

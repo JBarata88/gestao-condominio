@@ -109,7 +109,7 @@ export default async function PaginaRelatoriosOrcamento({
           <TabelaOrcamento
             grupos={[
               { titulo: "A — Administração anterior", linhas: mapa.origem.anterior, subtotal: mapa.origem.anteriorSubtotal },
-              { titulo: "B — Administração actual", linhas: mapa.origem.atual, subtotal: mapa.origem.atualSubtotal },
+              { titulo: "B — Administração atual", linhas: mapa.origem.atual, subtotal: mapa.origem.atualSubtotal },
             ]}
             total={mapa.origem.total}
           />

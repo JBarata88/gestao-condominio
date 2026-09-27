@@ -76,7 +76,7 @@ function FormularioNovaConta({ fracoes }: { fracoes: FracaoOpcao[] }) {
   return (
     <Painel
       titulo="Nova conta"
-      descricao="A conta fica activa de imediato. Comunica o email e a palavra-passe ao condómino; ele pode mudá-la depois."
+      descricao="A conta fica ativa de imediato. Comunica o email e a palavra-passe ao condómino; ele pode mudá-la depois."
     >
       <form action={despachar} className="flex flex-col gap-5">
         <div className="grid gap-5 sm:grid-cols-2">
