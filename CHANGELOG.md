@@ -1,5 +1,14 @@
 # Histórico de alterações
 
+## [1.0.4] — 2026-09-27
+
+### Removido
+- **Painel**: o cartão **Frações em atraso** na secção Quotas. A lista das
+  frações com valores em falta continua por baixo do cartão **Valor por
+  cobrar**.
+
+---
+
 ## [1.0.3] — 2026-09-27
 
 ### Removido
