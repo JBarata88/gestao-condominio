@@ -105,7 +105,7 @@ export default async function PaginaRelatoriosOrcamento({
       )}
 
       <div className="flex flex-col gap-6">
-        <Painel titulo="Origem de fundos" className="print:border-0 print:p-0 print:shadow-none">
+        <Painel titulo="Origem de fundos" className="hidden print:block print:border-0 print:p-0 print:shadow-none">
           <TabelaOrcamento
             grupos={[
               { titulo: "A — Administração anterior", linhas: mapa.origem.anterior, subtotal: mapa.origem.anteriorSubtotal },

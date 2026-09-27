@@ -1,5 +1,13 @@
 # Histórico de alterações
 
+## [1.0.2] — 2026-09-27
+
+### Alterado
+- **Orçamento vs Realizado**: a secção **Origem de fundos** deixa de
+  aparecer no ecrã, mas continua na impressão e no ficheiro Excel.
+
+---
+
 ## [1.0.1] — 2026-09-24
 
 ### Alterado
