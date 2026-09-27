@@ -162,26 +162,18 @@ export default async function PaginaPainel({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <CartaoKpi
+            rotulo="Frações em atraso"
+            valor={`${emAtraso.length} de ${fracoes.filter((f) => f.ativo).length}`}
+            moeda={false}
+            tom={emAtraso.length > 0 ? "alerta" : "neutro"}
+            nota={`Prazo de pagamento: dia ${diaLimite} de cada mês`}
+          />
+          <CartaoKpi
             rotulo="Valor por cobrar"
             valor={porCobrar}
             tom={porCobrar > 0 ? "alerta" : "neutro"}
           />
         </div>
-
-        {emAtraso.length > 0 && (
-          <ul className="mt-5 flex flex-wrap gap-2">
-            {emAtraso.map((l) => (
-              <li
-                key={l.fracao.id}
-                className="rounded-lg border border-ocre-200 bg-ocre-50 px-3 py-2 text-sm text-ocre-800"
-              >
-                <span className="font-medium">Fração {l.fracao.letra}</span>
-                <span className="text-ocre-700/80"> · {l.fracao.andar} · </span>
-                <span className="tabular">{euros(l.totalEmFalta)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
       {movimentos.length === 0 && (

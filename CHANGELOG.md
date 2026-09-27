@@ -1,5 +1,18 @@
 # Histórico de alterações
 
+## [1.0.5] — 2026-09-27
+
+### Corrigido
+- **Painel**: volta o cartão **Frações em atraso**, retirado por engano na
+  versão 1.0.4.
+
+### Removido
+- **Painel**: a lista de frações em atraso por baixo dos cartões da secção
+  Quotas (ex.: "Fração A · 1º DTO · 160,00 €"). O detalhe por fração está na
+  página **Quotas**.
+
+---
+
 ## [1.0.4] — 2026-09-27
 
 ### Removido
