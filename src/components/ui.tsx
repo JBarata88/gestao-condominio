@@ -136,6 +136,24 @@ export function LigacaoBotao({
   );
 }
 
+/**
+ * Ligação com aspeto de botão para um ficheiro (PDF, Word, Excel) servido por
+ * uma rota da API. Um <a> simples em vez do Link do Next, que tentaria
+ * navegar na aplicação em vez de abrir ou descarregar o ficheiro.
+ */
+export function LigacaoFicheiro({
+  variante = "primario",
+  className = "",
+  ...resto
+}: ComponentProps<"a"> & { variante?: Variante }) {
+  return (
+    <a
+      {...resto}
+      className={`${BASE_BOTAO} ${ESTILO_BOTAO[variante]} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-verdete-500 ${className}`}
+    />
+  );
+}
+
 /** Mensagem para listas vazias, em vez de uma tabela sem linhas. */
 export function Vazio({ children }: { children: ReactNode }) {
   return (

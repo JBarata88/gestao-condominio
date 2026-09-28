@@ -23,3 +23,6 @@ Thumbs.db
 temporary screenshots/
 
 .vercel
+
+# Guias em PDF: as capturas mostram valores reais das contas.
+/Guias/

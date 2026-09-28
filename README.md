@@ -8,6 +8,12 @@ Substitui as folhas de Excel e os documentos Word que eram preenchidos à mão.
 O histórico de alterações, versão a versão, está em [`CHANGELOG.md`](CHANGELOG.md).
 A versão em uso aparece no canto inferior esquerdo da aplicação.
 
+Guias de utilização em PDF, com capturas de ecrã anotadas: `npm run guias`
+(com o servidor em localhost:3000) gera o Guia do Utilizador e o Guia do
+Administrador em `Guias/` e publica-os no bucket privado `guias` do Supabase
+Storage, de onde a página **Guias de utilização** os serve a quem tem sessão.
+Não ficam no repositório porque as capturas mostram valores reais.
+
 ## O que faz
 
 - **Painel** com o valor em caixa, o valor no banco, o total disponível, o movimento do mês e as frações com quotas em atraso.

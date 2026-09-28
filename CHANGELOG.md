@@ -1,5 +1,18 @@
 # Histórico de alterações
 
+## [1.2.0] — 2026-09-28
+
+### Adicionado
+- **Guias de utilização** — nova opção no menu, para todos.
+  - **Guia do Utilizador**: como consultar as contas passo a passo, com
+    imagens da aplicação e a explicação de cada valor e cálculo.
+  - **Guia do Administrador** (só para a administração): configurar o
+    condomínio, importar extratos, lançar movimentos, gerar recibos,
+    preparar assembleias e fechar o ano.
+  - Cada guia pode ser lido dentro da aplicação ou descarregado em **PDF**.
+
+---
+
 ## [1.1.0] — 2026-09-27
 
 ### Adicionado

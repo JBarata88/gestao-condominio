@@ -1,6 +1,6 @@
 {
   "name": "gestao-condominio",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node scripts/testar.mjs",
-    "shot": "node screenshot.mjs"
+    "shot": "node screenshot.mjs",
+    "guias": "tsx scripts/guias/capturar.ts && tsx scripts/guias/gerar-pdf.ts && tsx scripts/guias/publicar.ts"
   },
   "overrides": {
     "postcss": "^8.5.28"
